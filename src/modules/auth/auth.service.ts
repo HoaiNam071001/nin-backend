@@ -53,6 +53,7 @@ export class AuthService {
     if (existingUser) {
       throw new ConflictException('Email already in use');
     }
+
     // Tạo người dùng mới
     const { firstName, lastName } = signupDto;
     signupDto.fullName = `${firstName} ${lastName}`;

@@ -15,7 +15,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET'), // Lấy secret từ biến môi trường
-        signOptions: { expiresIn: '100m' },
+        signOptions: { expiresIn: '10d' },
       }),
       inject: [ConfigService],
     }),

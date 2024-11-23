@@ -12,8 +12,7 @@ import {
 } from '@nestjs/common';
 import { CourseService } from './course.service';
 import { Course } from './entity/course.entity';
-import { CreateCourseDto } from './dto/create-course.dto';
-import { UpdateCourseDto } from './dto/update-course.dto';
+import { CourseDto } from './dto/course.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AuthRequest } from '../../common/interfaces';
 import { PagingRequestDto } from '../../common/dto/pagination-request.dto';
@@ -26,10 +25,10 @@ export class CourseController {
   // Tạo một khóa học mới
   @Post()
   async create(
-    @Body() createCourseDto: CreateCourseDto,
+    @Body() courseDto: CourseDto,
     @Req() { user }: AuthRequest,
   ): Promise<Course> {
-    return this.courseService.create(createCourseDto, user);
+    return this.courseService.create(courseDto, user);
   }
 
   // Lấy tất cả các khóa học
@@ -44,18 +43,18 @@ export class CourseController {
 
   // Lấy một khóa học theo ID
   @Get(':id')
-  async findOne(@Param('id') id: number): Promise<Course> {
-    return this.courseService.findOne(id);
+  async getById(@Param('id') id: number) {
+    return this.courseService.getById(id);
   }
 
   // Cập nhật thông tin khóa học
   @Put(':id')
   async update(
     @Param('id') id: number,
-    @Body() updateCourseDto: UpdateCourseDto,
+    @Body() courseDto: CourseDto,
     @Req() { user }: AuthRequest,
   ): Promise<Course> {
-    return this.courseService.update(id, updateCourseDto, user);
+    return this.courseService.update(id, courseDto, user);
   }
 
   // Xóa một khóa học

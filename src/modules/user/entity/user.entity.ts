@@ -11,6 +11,7 @@ import * as bcrypt from 'bcrypt';
 import { Course } from '../../course/entity/course.entity';
 import { UserRole } from './user-role.entity';
 import { Exclude } from 'class-transformer';
+import { Topic } from '../../course/entity/topic.entity';
 
 @Entity('users') // Tên bảng trong cơ sở dữ liệu
 export class User {
@@ -45,19 +46,10 @@ export class User {
   @Column({ type: 'varchar', length: 255, nullable: false }) // Mật khẩu
   password: string;
 
-  @CreateDateColumn({
-    name: 'create_at',
-    type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP',
-  }) // Thời gian tạo bản ghi
-  createAt: Date;
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt: Date;
 
-  @UpdateDateColumn({
-    name: 'updated_at',
-    type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP',
-    onUpdate: 'CURRENT_TIMESTAMP',
-  }) // Thời gian cập nhật bản ghi
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
   @BeforeInsert()
@@ -70,4 +62,7 @@ export class User {
 
   @OneToMany(() => UserRole, (role) => role.user)
   roles: UserRole[]; // Thêm quan hệ với UserRole
+
+  @OneToMany(() => Topic, (role) => role.user)
+  topics: Topic[];
 }
