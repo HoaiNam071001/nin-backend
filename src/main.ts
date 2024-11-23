@@ -23,7 +23,7 @@ async function bootstrap() {
   app.enableCors({
     origin: 'http://localhost:3000', // Chỉ cho phép domain này truy cập
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // Các phương thức HTTP được phép
-    allowedHeaders: 'Content-Type, Accept', // Các header được phép
+    allowedHeaders: ['Content-Type', 'Authorization'], // Cho phép header Authorization
     credentials: true, // Cho phép gửi cookie và thông tin xác thực khác
   });
 

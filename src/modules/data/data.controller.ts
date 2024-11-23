@@ -19,8 +19,6 @@ export class DataController {
   @UseInterceptors(FileInterceptor('file')) // 'file' là tên field trong form
   async uploadFile(@UploadedFile() file: Express.Multer.File) {
     const hdfsFilePath = `/upload/file/${file.originalname}`; // Đường dẫn lưu trên HDFS
-    console.log(file, hdfsFilePath);
-
     if (!file) {
       throw new Error('Không có file nào được gửi!');
     }

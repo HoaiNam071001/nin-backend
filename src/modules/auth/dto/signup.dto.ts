@@ -20,6 +20,10 @@ export class SignupDto {
   @IsString()
   lastName?: string;
 
+  @IsOptional()
+  @IsString()
+  fullName?: string;
+
   @IsNotEmpty()
   @IsString()
   password: string;

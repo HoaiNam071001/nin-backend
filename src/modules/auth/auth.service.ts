@@ -11,7 +11,6 @@ import { User } from '../user/entity/user.entity';
 import { SignupDto } from './dto/signup.dto';
 import { JwtPayload } from './jwt-payload.interface';
 import { AuthResponseDto } from './dto/response.dto';
-import { plainToClass } from 'class-transformer';
 
 @Injectable()
 export class AuthService {
@@ -35,7 +34,7 @@ export class AuthService {
     const payload = { email: user.email, sub: user.id }; // sub thường là ID người dùng
     return {
       token: this.jwtService.sign(payload),
-      user: plainToClass(User, user),
+      user: user,
     };
   }
   private async validatePassword(
@@ -55,12 +54,14 @@ export class AuthService {
       throw new ConflictException('Email already in use');
     }
     // Tạo người dùng mới
+    const { firstName, lastName } = signupDto;
+    signupDto.fullName = `${firstName} ${lastName}`;
     const user = await this.userService.create(signupDto);
     const payload: JwtPayload = { email: user.email, sub: user.id }; // sub thường là ID người dùng
 
     return {
       token: this.jwtService.sign(payload),
-      user: plainToClass(User, user),
+      user,
     };
   }
 }

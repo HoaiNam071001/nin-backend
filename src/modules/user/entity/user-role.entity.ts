@@ -7,12 +7,14 @@ import {
 } from 'typeorm';
 import { User } from './user.entity';
 import { Role } from '../../../common/enums/roles.enum';
+import { Exclude } from 'class-transformer';
 
 @Entity('user_roles') // Tên bảng trong cơ sở dữ liệu
 export class UserRole {
   @PrimaryGeneratedColumn() // Tạo ID tự động
   id: number;
 
+  @Exclude()
   @Column({ name: 'user_id' }) // Khóa ngoại tham chiếu đến User.Id
   userId: number;
 

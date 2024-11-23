@@ -24,14 +24,14 @@ export class UserService {
   async create(createUserDto: SignupDto): Promise<User> {
     const user = this.usersRepository.create(createUserDto); // Tạo instance User
     const savedUser = await this.usersRepository.save(user); // Lưu vào database
+    await this.createUserRole(savedUser.id, createUserDto.role);
+    return await this.findById(savedUser.id);
 
     // await this.searchService.indexDocument(
     //   'users',
     //   savedUser.id.toString(),
     //   plainToClass(User, savedUser),
     // );
-    await this.createUserRole(savedUser.id, createUserDto.role);
-    return savedUser;
   }
 
   // // Lấy tất cả người dùng
@@ -41,14 +41,18 @@ export class UserService {
 
   // Lấy người dùng theo ID
   async findById(id: number): Promise<User> {
-    const user = await this.usersRepository.findOne({ where: { id } });
+    const user = await this.usersRepository.findOne({
+      where: { id },
+      relations: ['roles'],
+    });
     return plainToClass(User, user);
   }
 
   async findByEmail(email: string): Promise<User> {
-    return await this.usersRepository.findOne({
+    const user = await this.usersRepository.findOne({
       where: { email },
     });
+    return user;
   }
 
   // Cập nhật thông tin người dùng
@@ -93,6 +97,7 @@ export class UserService {
     return await this.userRoleRepository.findOne({ where: { id, roleName } }); // Giả sử có trường userId trong bảng userRole
   }
 
+  // Role
   async createUserRole(id: number, role: Role): Promise<UserRole> {
     const userRole = this.userRoleRepository.create({
       userId: id,
@@ -100,5 +105,15 @@ export class UserService {
     });
     const roleRes = await this.userRoleRepository.save(userRole);
     return roleRes;
+  }
+
+  async addRoleToUser(userId: number, role: Role) {
+    const user = await this.findById(userId);
+    if (user.roles.some((e) => e.roleName === role)) {
+      return user.roles;
+    }
+
+    await this.createUserRole(userId, role);
+    return this.findById(userId);
   }
 }

@@ -23,8 +23,14 @@ export class User {
   @Column({ name: 'first_name', type: 'varchar', length: 255, nullable: true }) // Họ
   firstName?: string;
 
+  @Column({ name: 'full_name', type: 'varchar', length: 255, nullable: true }) // Tên
+  fullName?: string;
+
   @Column({ name: 'last_name', type: 'varchar', length: 255, nullable: true }) // Tên
   lastName?: string;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  avatar?: string;
 
   @Column({ name: 'phone_number', type: 'varchar', length: 15, nullable: true }) // Số điện thoại
   phoneNumber?: string;
@@ -36,7 +42,7 @@ export class User {
   bio?: string;
 
   @Exclude()
-  @Column({ type: 'varchar', length: 255 }) // Mật khẩu
+  @Column({ type: 'varchar', length: 255, nullable: false }) // Mật khẩu
   password: string;
 
   @CreateDateColumn({
