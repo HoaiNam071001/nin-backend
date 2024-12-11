@@ -9,8 +9,8 @@ import {
   OneToMany,
   PrimaryColumn,
 } from 'typeorm';
-import { Course } from './course.entity';
-import { User } from '../../user/entity/user.entity';
+import { User } from '../../../../user/entity/user.entity';
+import { Course } from '../../../entity/course.entity';
 
 @Entity('topics')
 export class Topic {
@@ -43,23 +43,23 @@ export class CourseTopic {
   courseId: number;
 
   @PrimaryColumn({ name: 'topic_id' })
-  id: number;
+  topicId: number;
 
   @ManyToOne(() => Course, (course) => course.courseTopics, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'course_id' })
-  course: Course;
+  course?: Course;
 
   @ManyToOne(() => Topic, (topic) => topic.courseTopics, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'topic_id' })
-  topic: Topic;
+  topic?: Topic;
 
   @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date;
+  createdAt?: Date;
 
   @UpdateDateColumn({ name: 'updated_at' })
-  updatedAt: Date;
+  updatedAt?: Date;
 }

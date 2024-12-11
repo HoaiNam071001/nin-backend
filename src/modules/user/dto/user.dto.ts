@@ -16,6 +16,21 @@ export class ShortUser {
   fullName: string;
 
   @Exclude()
+  phoneNumber?: string;
+
+  @Exclude()
+  birthDay?: Date;
+
+  @Exclude()
+  bio?: string;
+
+  @Exclude()
+  password: string;
+
+  @Exclude()
+  roles: UserRole[];
+
+  @Exclude()
   @Expose()
   createdAt: Date;
 

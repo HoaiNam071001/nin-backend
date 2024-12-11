@@ -6,7 +6,7 @@ import {
   UpdateDateColumn,
   OneToMany,
 } from 'typeorm';
-import { Course } from './course.entity';
+import { Course } from '../../../entity/course.entity';
 
 @Entity('levels')
 export class Level {
@@ -23,5 +23,5 @@ export class Level {
   updatedAt: Date;
 
   @OneToMany(() => Course, (course) => course.level)
-  courses: Course[];
+  courses?: Course[];
 }

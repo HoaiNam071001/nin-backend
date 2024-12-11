@@ -51,6 +51,7 @@ export class UserService {
   async findByEmail(email: string): Promise<User> {
     const user = await this.usersRepository.findOne({
       where: { email },
+      relations: ['roles'],
     });
     return user;
   }
@@ -110,10 +111,11 @@ export class UserService {
   async addRoleToUser(userId: number, role: Role) {
     const user = await this.findById(userId);
     if (user.roles.some((e) => e.roleName === role)) {
-      return user.roles;
+      return user;
     }
 
     await this.createUserRole(userId, role);
-    return this.findById(userId);
+    const _user = await this.findById(userId);
+    return _user;
   }
 }

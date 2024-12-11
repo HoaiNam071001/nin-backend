@@ -1,61 +1,105 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { createClient } from 'webhdfs';
-import { Express } from 'express';
-import { Readable } from 'stream';
+import axios from 'axios';
+import { Response } from 'express';
+import { hadoopConfig } from '../../config/database.config';
+import { ConfigService } from '@nestjs/config';
+import * as streamifier from 'streamifier';
+import { ENV_ATTR } from '../../config/app.config';
+import {
+  FILE_ROUTE,
+  getFileName,
+  mapSystemTypeToLocalPath,
+  SystemFileType,
+} from './models';
 
 @Injectable()
 export class DataService {
-  private hdfsClient;
+  public hdfsClient;
 
   // hadoop fs -ls /
+  config = hadoopConfig(this.configService);
 
-  constructor() {
-    this.hdfsClient = createClient({
-      user: 'dr.who',
-      host: 'localhost',
-      port: 9870,
-      path: '/webhdfs/v1',
-    });
+  constructor(private configService: ConfigService) {
+    this.hdfsClient = createClient(this.config);
   }
 
   async uploadFile(
     file: Express.Multer.File,
-    hdfsFilePath: string,
+    type: SystemFileType = SystemFileType.OTHER,
+  ): Promise<{ url: string }> {
+    type = type || SystemFileType.OTHER;
+    const fileName = getFileName(file);
+    const localPath = mapSystemTypeToLocalPath(type);
+    const hdfsPath = `${localPath}/${fileName}`;
+
+    try {
+      await this.uploadFileToHdfs(file.buffer, hdfsPath);
+      const appUrl = this.configService.get<string>(ENV_ATTR.APP_URL);
+      const port = this.configService.get<string>(ENV_ATTR.PORT);
+
+      return { url: `${appUrl}:${port}${FILE_ROUTE}${hdfsPath}` };
+    } catch (error) {
+      throw new HttpException(
+        `Failed to upload file: ${error}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  getHdfsPath(hdfsPath: string) {
+    const { host, port, path } = this.config;
+    return `http://${host}:${port}${path}/${hdfsPath}?op=OPEN`;
+  }
+
+  async uploadFileToHdfs(
+    fileBuffer: Buffer,
+    hdfsPath: string,
   ): Promise<string> {
     return new Promise((resolve, reject) => {
-      // Tạo stream ghi đến HDFS
-      const writeStream = this.hdfsClient.createWriteStream(hdfsFilePath);
-      // Kiểm tra nếu writeStream bị null
-      if (!writeStream) {
-        return reject(`Không thể tạo stream ghi tới HDFS`);
-      }
+      // Chuyển Buffer thành Stream
+      const fileStream = streamifier.createReadStream(fileBuffer);
 
-      // Sử dụng buffer để upload tệp
-      const bufferStream = new Readable();
-      bufferStream.push(file.buffer); // Push buffer của file vào stream
-      bufferStream.push(null); // Kết thúc stream
+      // Tạo stream ghi vào HDFS
+      const hdfsWriteStream = this.hdfsClient.createWriteStream(hdfsPath);
 
-      bufferStream
-        .pipe(writeStream)
-        .on('finish', () => {
-          resolve(`Tệp đã được upload lên HDFS tại ${hdfsFilePath}`);
-        })
-        .on('error', (err) => {
-          console.error('Lỗi khi upload file:', err); // Log lỗi chi tiết
-          reject(`Lỗi khi upload file: ${err.message}`);
-        });
+      // Pipe dữ liệu từ fileStream vào HDFS write stream
+      fileStream.pipe(hdfsWriteStream);
+
+      // Lắng nghe sự kiện khi upload hoàn tất
+      hdfsWriteStream.on('finish', () => {
+        resolve(hdfsPath);
+      });
+
+      // Lắng nghe sự kiện lỗi
+      hdfsWriteStream.on('error', (err) => {
+        reject(`Failed to upload file to HDFS: ${err.message}`);
+      });
     });
   }
 
-  // async getVideoFilePath(hdfsFilePath: string): Promise<string> {
-  //   return new Promise((resolve, reject) => {
-  //     // Tạo URL video
-  //     const videoUrl = `http://${this.hdfsClient.host}:${this.hdfsClient.port}/webhdfs/v1${hdfsFilePath}?op=OPEN`;
-  //     resolve(videoUrl);
-  //   });
-  // }
+  async readFile(hdfsFilePath: string, res: Response) {
+    const hdfsUrl = this.getHdfsPath(hdfsFilePath);
+    try {
+      // Gửi request tới WebHDFS
+      const response = await axios({
+        url: hdfsUrl,
+        method: 'GET',
+        responseType: 'stream', // Đảm bảo trả về dạng luồng
+      });
 
-  async streamVideo(videoPath: string) {
-    return this.hdfsClient.createReadStream(videoPath);
+      // Lấy Content-Type từ WebHDFS
+      const contentType =
+        response.headers['content-type'] || 'application/octet-stream';
+      res.setHeader('Content-Type', contentType);
+
+      // Gửi luồng dữ liệu tới client
+      response.data.pipe(res);
+    } catch (error) {
+      throw new HttpException(
+        `Không thể đọc file từ HDFS: ${error}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

@@ -1,16 +1,31 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { CourseService } from './course.service';
-import { CourseController } from './course.controller';
+import { CourseService } from './service/course.service';
+import { CourseController } from './controller/course.controller';
 import { Course } from './entity/course.entity';
-import { Category } from './entity/category.entity';
-import { Level } from './entity/level.entity';
-import { Topic } from './entity/topic.entity';
+import { CourseUpdateService } from './service/course-update.service';
+import { UserModule } from '../user/user.module';
+import { LevelModule } from './_modules/level/level.module';
+import { CategoryModule } from './_modules/category/category.module';
+import { TopicModule } from './_modules/topic/topic.module';
+import { SectionModule } from './_modules/section/section.module';
+import { PostModule } from './_modules/post/post.module';
+import { VideoModule } from './_modules/video/video.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Course, Category, Level, Topic])],
-  providers: [CourseService],
+  imports: [
+    TypeOrmModule.forFeature([Course]),
+    UserModule,
+    LevelModule,
+    CategoryModule,
+    TopicModule,
+    forwardRef(() => SectionModule),
+    PostModule,
+    VideoModule,
+  ],
+  providers: [CourseService, CourseUpdateService],
   controllers: [CourseController],
+  exports: [CourseService, CourseUpdateService], // Export the services so they can be used in other modules
 })
 export class CourseModule {
   static TypeOrmModule: Course;

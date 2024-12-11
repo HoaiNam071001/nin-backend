@@ -12,3 +12,8 @@ export enum CourseStatus {
   CLOSED = 'closed',
   DELETED = 'deleted',
 }
+
+export enum SectionType {
+  'video',
+  'post',
+}

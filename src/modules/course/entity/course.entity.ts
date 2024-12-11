@@ -10,10 +10,12 @@ import {
 } from 'typeorm';
 import { User } from '../../user/entity/user.entity';
 import { CourseStatus } from '../../../common/enums/roles.enum';
-import { CourseTopic } from './topic.entity';
-import { Category } from './category.entity';
-import { Level } from './level.entity';
-
+import { Category } from '../_modules/category/entity/category.entity';
+import { Exclude } from 'class-transformer';
+import { Level } from '../_modules/level/entity/level.entity';
+import { CourseTopic } from '../_modules/topic/entity/topic.entity';
+import { NFile } from '../../file/entity/file.entity';
+import { Section } from '../_modules/section/entity/section.entity';
 @Entity('courses')
 export class Course {
   @PrimaryGeneratedColumn()
@@ -36,6 +38,18 @@ export class Course {
 
   @Column({ name: 'estimated_time', type: 'int', nullable: true })
   estimatedTime?: number;
+
+  @Column({ name: 'owner_id', type: 'int', nullable: true })
+  ownerId?: number;
+
+  // @Column({ name: 'category_id', type: 'int', nullable: true })
+  // categoryId?: number;
+
+  // @Column({ name: 'sub_category_id', type: 'int', nullable: true })
+  // subCategoryId?: number;
+
+  // @Column({ name: 'level_id', type: 'int', nullable: true })
+  // levelId?: number;
 
   @Column({ type: 'varchar', enum: CourseStatus, default: CourseStatus.DRAFT })
   status: CourseStatus;
@@ -72,6 +86,13 @@ export class Course {
   @JoinColumn({ name: 'level_id' })
   level: Level;
 
+  @Exclude()
   @OneToMany(() => CourseTopic, (courseTopic) => courseTopic.course)
   courseTopics: CourseTopic[];
+
+  @OneToMany(() => NFile, (file) => file.course)
+  files: NFile[];
+
+  @OneToMany(() => Section, (section) => section.course)
+  sections: Section[];
 }

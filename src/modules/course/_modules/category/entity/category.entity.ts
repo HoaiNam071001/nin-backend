@@ -8,7 +8,7 @@ import {
   UpdateDateColumn,
   JoinColumn,
 } from 'typeorm';
-import { Course } from './course.entity';
+import { Course } from '../../../entity/course.entity';
 
 @Entity('categories') // Tên bảng trong cơ sở dữ liệu
 export class Category {
@@ -23,31 +23,17 @@ export class Category {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
-  //   @Column({
-  //     name: 'created_at',
-  //     type: 'timestamp',
-  //     default: () => 'CURRENT_TIMESTAMP',
-  //   })
-  //   createdAt: Date;
-
-  //   @Column({
-  //     name: 'updated_at',
-  //     type: 'timestamp',
-  //     default: () => 'CURRENT_TIMESTAMP',
-  //     onUpdate: 'CURRENT_TIMESTAMP',
-  //   })
-  //   updatedAt: Date;
 
   @ManyToOne(() => Category, (category) => category.subcategories, {
     nullable: true,
     onDelete: 'SET NULL',
   })
   @JoinColumn({ name: 'parent_category_id' })
-  parentCategory: Category;
+  parentCategory?: Category;
 
   @OneToMany(() => Category, (category) => category.parentCategory)
-  subcategories: Category[];
+  subcategories?: Category[];
 
   @OneToMany(() => Course, (course) => course.category)
-  courses: Course[];
+  courses?: Course[];
 }

@@ -11,7 +11,8 @@ import * as bcrypt from 'bcrypt';
 import { Course } from '../../course/entity/course.entity';
 import { UserRole } from './user-role.entity';
 import { Exclude } from 'class-transformer';
-import { Topic } from '../../course/entity/topic.entity';
+import { NFile } from '../../file/entity/file.entity';
+import { Topic } from '../../course/_modules/topic/entity/topic.entity';
 
 @Entity('users') // Tên bảng trong cơ sở dữ liệu
 export class User {
@@ -65,4 +66,7 @@ export class User {
 
   @OneToMany(() => Topic, (role) => role.user)
   topics: Topic[];
+
+  @OneToMany(() => NFile, (file) => file.user)
+  files: NFile[];
 }

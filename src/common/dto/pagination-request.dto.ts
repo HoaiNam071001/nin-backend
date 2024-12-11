@@ -1,5 +1,8 @@
 import { IsOptional, IsInt, IsString, IsPositive } from 'class-validator';
-import { FindManyOptions, Like } from 'typeorm';
+import { FindManyOptions, ILike } from 'typeorm';
+
+export const DEFAULT_PAGE_SIZE = 10;
+export const FIRST_PAGE = 0;
 
 export class PagingRequestDto<T> {
   @IsOptional()
@@ -10,11 +13,11 @@ export class PagingRequestDto<T> {
   @IsOptional()
   @IsInt()
   @IsPositive()
-  private _limit?: number;
+  private _size?: number;
 
   @IsOptional()
   @IsString({ each: true })
-  private _order?: string[];
+  private _sort?: string[];
 
   @IsOptional()
   @IsString()
@@ -26,23 +29,23 @@ export class PagingRequestDto<T> {
     pagingRequest: PagingRequestDto<T>,
     searchableFields: (keyof T)[] = [],
   ) {
-    this._page = pagingRequest?.page || 1;
-    this._limit = +pagingRequest?.limit || 10; // Mặc định là giới hạn 10 bản ghi
-    this._order = pagingRequest?.order;
+    this._page = pagingRequest?.page || FIRST_PAGE;
+    this._size = +pagingRequest?.size || DEFAULT_PAGE_SIZE;
+    this._sort = pagingRequest?.sort;
     this._keyword = pagingRequest?.keyword;
     this.searchableFields = searchableFields; // Lưu danh sách các trường tìm kiếm
   }
 
   get page(): number {
-    return this._page || 1;
+    return this._page || FIRST_PAGE;
   }
 
-  get limit(): number {
-    return this._limit || 10;
+  get size(): number {
+    return this._size || DEFAULT_PAGE_SIZE;
   }
 
-  get order(): string[] | undefined {
-    return this._order;
+  get sort(): string[] | undefined {
+    return this._sort;
   }
 
   get keyword(): string | undefined {
@@ -50,11 +53,12 @@ export class PagingRequestDto<T> {
   }
 
   // Hàm ánh xạ truy vấn
-  mapOrmQuery(params?: FindManyOptions<T>): any {
+  mapOrmQuery(params?: FindManyOptions<T>): FindManyOptions<T> {
+    const skip = (this.page - 1) * this.size; // Tính toán số bản ghi bỏ qua
     const query: FindManyOptions<T> = {
       ...params,
-      skip: (this.page - 1) * this.limit, // Tính toán số bản ghi bỏ qua
-      take: this.limit,
+      skip: skip > 0 ? skip : 0,
+      take: this.size,
     };
 
     // Nếu có từ khóa tìm kiếm
@@ -62,20 +66,28 @@ export class PagingRequestDto<T> {
       this.searchableFields.forEach((field) => {
         query.where = {
           ...query.where,
-          [field]: Like(`%${this.keyword}%`),
+          [field]: ILike(`%${this.keyword?.toLowerCase()}%`),
         };
       });
     }
 
     // Thêm tùy chọn sắp xếp vào query
-    if (this.order) {
-      this.order.forEach((item) => {
-        const [field, direction] = item.split(':');
+    if (this.sort) {
+      if (typeof this.sort === 'string') {
+        const [field, direction] = (this.sort as string)?.split(':');
         query.order = {
           ...query.order,
           [field]: direction.toUpperCase() === 'DESC' ? 'DESC' : 'ASC',
         };
-      });
+      } else {
+        this.sort?.forEach((item) => {
+          const [field, direction] = item.split(':');
+          query.order = {
+            ...query.order,
+            [field]: direction.toUpperCase() === 'DESC' ? 'DESC' : 'ASC',
+          };
+        });
+      }
     }
 
     return query;
