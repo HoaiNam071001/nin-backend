@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Category } from '../entity/category.entity';
-import { Repository } from 'typeorm';
+import { IsNull, Repository } from 'typeorm';
 import { plainToClass } from 'class-transformer';
 import { CategoryDto } from '../dto/category.dto';
 import { CustomNotFoundException } from '../../../../../common/exceptions/http/custom-not-found.exception';
@@ -39,6 +39,16 @@ export class CategoryService {
       pagable.page,
       pagable.size,
     );
+  }
+
+  async findAll() {
+    const categories = await this.categoryRepository.find({
+      relations: ['subcategories'],
+      where: {
+        parentCategory: IsNull(),
+      },
+    });
+    return categories.map((e) => plainToClass(CategoryDto, e));
   }
 
   async findChildList(parentId: number, pagable: PagingRequestDto<Category>) {

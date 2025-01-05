@@ -18,11 +18,11 @@ export class Category {
   @Column({ type: 'varchar', length: 255, nullable: false }) // Tên vai trò
   name: string;
 
-  @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date;
-
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
+
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt: Date;
 
   @ManyToOne(() => Category, (category) => category.subcategories, {
     nullable: true,

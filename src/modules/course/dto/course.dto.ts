@@ -3,8 +3,8 @@ import { CourseStatus } from '../../../common/enums/roles.enum';
 import { Exclude, Expose } from 'class-transformer';
 import { ShortUser } from '../../user/dto/user.dto';
 import { TopicDto } from '../_modules/topic/dto/topic.dto';
-import { Category } from '../_modules/category/entity/category.entity';
 import { Level } from '../_modules/level/entity/level.entity';
+import { CategoryDto } from '../_modules/category/dto/category.dto';
 
 export class CourseDto {
   @Expose()
@@ -26,6 +26,10 @@ export class CourseDto {
   description?: string;
 
   @IsOptional()
+  @IsString()
+  summary?: string;
+
+  @IsOptional()
   @IsInt()
   price?: number;
 
@@ -40,10 +44,10 @@ export class CourseDto {
   owner?: ShortUser;
 
   @IsOptional()
-  category?: Category;
+  category?: CategoryDto;
 
   @IsOptional()
-  subCategory?: Category;
+  subCategory?: CategoryDto;
 
   @IsOptional()
   level?: Level;
@@ -78,6 +82,10 @@ export class CoursePayloadDto {
   @IsOptional()
   @IsString()
   description?: string;
+
+  @IsOptional()
+  @IsString()
+  summary?: string;
 
   @IsOptional()
   @IsInt()

@@ -11,6 +11,7 @@ import { TopicModule } from './_modules/topic/topic.module';
 import { SectionModule } from './_modules/section/section.module';
 import { PostModule } from './_modules/post/post.module';
 import { VideoModule } from './_modules/video/video.module';
+import { TargetModule } from './_modules/target/target.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { VideoModule } from './_modules/video/video.module';
     forwardRef(() => SectionModule),
     PostModule,
     VideoModule,
+    TargetModule,
   ],
   providers: [CourseService, CourseUpdateService],
   controllers: [CourseController],

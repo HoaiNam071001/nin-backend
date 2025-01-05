@@ -30,6 +30,9 @@ export class Course {
   @Column({ type: 'varchar', length: 255, nullable: true })
   thumbnail?: string;
 
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  summary?: string;
+
   @Column({ type: 'text', nullable: true })
   description?: string;
 

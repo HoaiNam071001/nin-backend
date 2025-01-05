@@ -10,6 +10,11 @@ export class CategoryController {
     return this.categoryService.findParentList(paging);
   }
 
+  @Get('all')
+  async findAll() {
+    return this.categoryService.findAll();
+  }
+
   @Get(':id')
   async findChildList(
     @Param('id') id: number,

@@ -1,0 +1,39 @@
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  OneToMany,
+} from 'typeorm';
+import { Course } from '../../../entity/course.entity';
+import { CourseTarget } from '../../../../../common/enums/course.enum';
+
+@Entity('course_targets')
+export class Target {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  content: string;
+
+  @Column({
+    name: 'type',
+    type: 'varchar',
+    enum: CourseTarget,
+    nullable: true,
+  })
+  type: CourseTarget;
+
+  @Column({ name: 'course_id', type: 'int' })
+  courseId: number;
+
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt: Date;
+
+  @UpdateDateColumn({ name: 'updated_at' })
+  updatedAt: Date;
+
+  @OneToMany(() => Course, (course) => course.level)
+  courses?: Course[];
+}

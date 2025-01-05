@@ -27,13 +27,8 @@ export class CourseUpdateService {
   async create(courseDto: CoursePayloadDto, user: User): Promise<CourseDto> {
     try {
       const course = this.courseRepository.create({
-        name: courseDto.name,
+        ...courseDto,
         slug: generateSlug(courseDto.name),
-        description: courseDto.description,
-        thumbnail: courseDto.thumbnail,
-        price: courseDto.price,
-        estimatedTime: courseDto.estimatedTime,
-        status: courseDto.status,
         owner: user,
       });
 
@@ -116,6 +111,7 @@ export class CourseUpdateService {
     course.price = payload.price ?? course.price;
     course.estimatedTime = payload.estimatedTime ?? course.estimatedTime;
     course.status = payload.status ?? course.status;
+    course.summary = payload.summary ?? course.summary;
     if (payload.categoryId !== course.category?.id) {
       course.category = await this.categoryService.findByById(
         payload.categoryId,
