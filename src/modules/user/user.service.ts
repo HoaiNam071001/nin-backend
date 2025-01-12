@@ -6,8 +6,8 @@ import { User } from './entity/user.entity';
 import { SignupDto } from '../auth/dto/signup.dto';
 import { UserRole } from './entity/user-role.entity';
 import { plainToClass } from 'class-transformer';
-import { ESearchService } from '../elasticsearch/elasticsearch.service';
 import { Role } from '../../common/enums/roles.enum';
+import { SearchService } from '../search/search.service';
 
 @Injectable()
 export class UserService {
@@ -17,7 +17,7 @@ export class UserService {
     @InjectRepository(UserRole)
     private userRoleRepository: Repository<UserRole>,
 
-    private searchService: ESearchService,
+    private searchService: SearchService,
   ) {}
 
   // Tạo người dùng mới

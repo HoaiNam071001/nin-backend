@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { NFile } from './entity/file.entity';
 import { FileDto, FilePayloadDto } from './dto/file.dto';
-import { DataService } from '../data/data.service';
+import { DataService } from '../data/services/data.service';
 import { plainToClass } from 'class-transformer';
 
 @Injectable()

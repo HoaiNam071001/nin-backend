@@ -1,28 +1,23 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { createClient } from 'webhdfs';
 import axios from 'axios';
 import { Response } from 'express';
-import { hadoopConfig } from '../../config/database.config';
 import { ConfigService } from '@nestjs/config';
 import * as streamifier from 'streamifier';
-import { ENV_ATTR } from '../../config/app.config';
+import { ENV_ATTR } from '../../../config/app.config';
 import {
   FILE_ROUTE,
   getFileName,
   mapSystemTypeToLocalPath,
   SystemFileType,
-} from './models';
+} from '../models';
+import { BaseService } from './base.service';
 
 @Injectable()
 export class DataService {
-  public hdfsClient;
-
-  // hadoop fs -ls /
-  config = hadoopConfig(this.configService);
-
-  constructor(private configService: ConfigService) {
-    this.hdfsClient = createClient(this.config);
-  }
+  constructor(
+    private baseService: BaseService,
+    private configService: ConfigService,
+  ) {}
 
   async uploadFile(
     file: Express.Multer.File,
@@ -48,7 +43,7 @@ export class DataService {
   }
 
   getHdfsPath(hdfsPath: string) {
-    const { host, port, path } = this.config;
+    const { host, port, path } = this.baseService.config;
     return `http://${host}:${port}${path}/${hdfsPath}?op=OPEN`;
   }
 
@@ -61,7 +56,8 @@ export class DataService {
       const fileStream = streamifier.createReadStream(fileBuffer);
 
       // Tạo stream ghi vào HDFS
-      const hdfsWriteStream = this.hdfsClient.createWriteStream(hdfsPath);
+      const hdfsWriteStream =
+        this.baseService.hdfsClient.createWriteStream(hdfsPath);
 
       // Pipe dữ liệu từ fileStream vào HDFS write stream
       fileStream.pipe(hdfsWriteStream);

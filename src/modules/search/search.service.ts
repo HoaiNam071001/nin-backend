@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ElasticsearchService as ESService } from '@nestjs/elasticsearch';
 
 @Injectable()
-export class ESearchService {
+export class SearchService {
   constructor(private readonly esService: ESService) {}
 
   // Tạo chỉ mục nếu chưa tồn tại

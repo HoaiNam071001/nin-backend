@@ -10,7 +10,7 @@ import {
   Body,
   // Req,
 } from '@nestjs/common';
-import { DataService } from './data.service';
+import { DataService } from './services/data.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 // import { JwtAuthGuard } from '../auth/jwt-auth.guard';

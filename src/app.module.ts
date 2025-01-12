@@ -10,9 +10,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { databaseConfig } from './config/database.config';
 import { DataModule } from './modules/data/data.module';
 import { FileModule } from './modules/file/file.module';
-import { SectionModule } from './modules/course/_modules/section/section.module';
-import { PostModule } from './modules/course/_modules/post/post.module';
-import { VideoModule } from './modules/course/_modules/video/video.module';
 
 @Module({
   imports: [

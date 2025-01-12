@@ -4,10 +4,10 @@ import { UserController } from './user.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entity/user.entity';
 import { UserRole } from './entity/user-role.entity';
-import { ESearchModule } from '../elasticsearch/elasticsearch.module';
+import { SearchModule } from '../search/search.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, UserRole]), ESearchModule],
+  imports: [TypeOrmModule.forFeature([User, UserRole]), SearchModule],
   providers: [UserService],
   controllers: [UserController],
   exports: [UserService],
