@@ -12,6 +12,10 @@ import { SectionModule } from './_modules/section/section.module';
 import { PostModule } from './_modules/post/post.module';
 import { VideoModule } from './_modules/video/video.module';
 import { TargetModule } from './_modules/target/target.module';
+import { CourseSearchController } from './controller/course-search.controller';
+import { CourseSearchService } from './service/course-search.service';
+
+const SERVICES = [CourseService, CourseUpdateService, CourseSearchService];
 
 @Module({
   imports: [
@@ -25,9 +29,9 @@ import { TargetModule } from './_modules/target/target.module';
     VideoModule,
     TargetModule,
   ],
-  providers: [CourseService, CourseUpdateService],
-  controllers: [CourseController],
-  exports: [CourseService, CourseUpdateService], // Export the services so they can be used in other modules
+  providers: [...SERVICES],
+  controllers: [CourseController, CourseSearchController],
+  exports: [...SERVICES],
 })
 export class CourseModule {
   static TypeOrmModule: Course;

@@ -21,6 +21,9 @@ export class UpdateUserDto {
   birthDay?: Date;
 
   @IsOptional()
+  password?: string;
+
+  @IsOptional()
   @IsString()
   @Length(0, 255)
   bio?: string;

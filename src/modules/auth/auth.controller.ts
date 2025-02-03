@@ -1,4 +1,11 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Put,
+  Param,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SigninDto } from './dto/signin.dto';
 import { SignupDto } from './dto/signup.dto';
@@ -15,5 +22,16 @@ export class AuthController {
   @Post('signup')
   async signup(@Body() createUserDto: SignupDto) {
     return this.authService.signup(createUserDto);
+  }
+
+  @Put('change-password/:id')
+  async changePassword(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() { password }: { password: string },
+  ) {
+    if (!password) {
+      return;
+    }
+    return this.authService.changePass(id, password);
   }
 }

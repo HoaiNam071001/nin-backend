@@ -45,14 +45,14 @@ export class Course {
   @Column({ name: 'owner_id', type: 'int', nullable: true })
   ownerId?: number;
 
-  // @Column({ name: 'category_id', type: 'int', nullable: true })
-  // categoryId?: number;
+  @Column({ name: 'category_id', type: 'int', nullable: true })
+  categoryId?: number;
 
   // @Column({ name: 'sub_category_id', type: 'int', nullable: true })
   // subCategoryId?: number;
 
-  // @Column({ name: 'level_id', type: 'int', nullable: true })
-  // levelId?: number;
+  @Column({ name: 'level_id', type: 'int', nullable: true })
+  levelId?: number;
 
   @Column({ type: 'varchar', enum: CourseStatus, default: CourseStatus.DRAFT })
   status: CourseStatus;
@@ -91,7 +91,7 @@ export class Course {
 
   @Exclude()
   @OneToMany(() => CourseTopic, (courseTopic) => courseTopic.course)
-  courseTopics: CourseTopic[];
+  topics: CourseTopic[];
 
   @OneToMany(() => NFile, (file) => file.course)
   files: NFile[];

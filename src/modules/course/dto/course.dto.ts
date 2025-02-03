@@ -1,6 +1,6 @@
 import { IsString, IsNotEmpty, IsOptional, IsInt } from 'class-validator';
 import { CourseStatus } from '../../../common/enums/roles.enum';
-import { Exclude, Expose } from 'class-transformer';
+import { Expose } from 'class-transformer';
 import { ShortUser } from '../../user/dto/user.dto';
 import { TopicDto } from '../_modules/topic/dto/topic.dto';
 import { Level } from '../_modules/level/entity/level.entity';
@@ -55,11 +55,9 @@ export class CourseDto {
   @IsOptional()
   topics?: TopicDto[];
 
-  @Exclude()
   @Expose()
   createdAt: Date;
 
-  @Exclude()
   @Expose()
   updatedAt: Date;
 }
@@ -112,4 +110,9 @@ export class CoursePayloadDto {
 
   @IsOptional()
   topicIds?: number[];
+}
+
+export class CourseStatusPayloadDto {
+  @IsString()
+  status?: CourseStatus;
 }

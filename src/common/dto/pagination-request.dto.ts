@@ -1,8 +1,13 @@
 import { IsOptional, IsInt, IsString, IsPositive } from 'class-validator';
-import { FindManyOptions, ILike } from 'typeorm';
+import { FindManyOptions, FindOptionsWhere, ILike } from 'typeorm';
 
 export const DEFAULT_PAGE_SIZE = 10;
 export const FIRST_PAGE = 0;
+
+export enum SortOrder {
+  ASC = 'ASC',
+  DESC = 'DESC',
+}
 
 export class PagingRequestDto<T> {
   @IsOptional()
@@ -63,12 +68,12 @@ export class PagingRequestDto<T> {
 
     // Nếu có từ khóa tìm kiếm
     if (this.keyword) {
-      this.searchableFields.forEach((field) => {
-        query.where = {
-          ...query.where,
-          [field]: ILike(`%${this.keyword?.toLowerCase()}%`),
-        };
-      });
+      const where = query.where;
+      const keywordCondition = this.searchableFields.map((field) => ({
+        ...where,
+        [field]: ILike(`%${this.keyword?.toLowerCase()}%`),
+      }));
+      query.where = keywordCondition as FindOptionsWhere<T>[];
     }
 
     // Thêm tùy chọn sắp xếp vào query
@@ -77,14 +82,20 @@ export class PagingRequestDto<T> {
         const [field, direction] = (this.sort as string)?.split(':');
         query.order = {
           ...query.order,
-          [field]: direction.toUpperCase() === 'DESC' ? 'DESC' : 'ASC',
+          [field]:
+            direction.toUpperCase() === SortOrder.DESC
+              ? SortOrder.DESC
+              : SortOrder.ASC,
         };
       } else {
         this.sort?.forEach((item) => {
           const [field, direction] = item.split(':');
           query.order = {
             ...query.order,
-            [field]: direction.toUpperCase() === 'DESC' ? 'DESC' : 'ASC',
+            [field]:
+              direction.toUpperCase() === SortOrder.DESC
+                ? SortOrder.DESC
+                : SortOrder.ASC,
           };
         });
       }

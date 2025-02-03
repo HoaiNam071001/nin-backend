@@ -10,12 +10,15 @@ import {
   Query,
 } from '@nestjs/common';
 import { CourseService } from '../service/course.service';
-import { CourseDto, CoursePayloadDto } from '../dto/course.dto';
+import {
+  CourseDto,
+  CoursePayloadDto,
+  CourseStatusPayloadDto,
+} from '../dto/course.dto';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 import { AuthRequest } from '../../../common/interfaces';
 import { CourseUpdateService } from '../service/course-update.service';
 import { PagingRequestDto } from '../../../common/dto/pagination-request.dto';
-import { Course } from '../entity/course.entity';
 
 @UseGuards(JwtAuthGuard)
 @Controller('course')
@@ -38,7 +41,7 @@ export class CourseController {
   @Get()
   async findMyCourse(
     @Req() { user }: AuthRequest,
-    @Query() paging: PagingRequestDto<Course>,
+    @Query() paging: PagingRequestDto<CourseDto>,
   ) {
     return this.courseService.findByOwner(user, paging);
   }
@@ -47,6 +50,15 @@ export class CourseController {
   @Get(':id')
   async getById(@Param('id') id: number) {
     return this.courseService.getById(id);
+  }
+
+  @Put(':id/status')
+  async updateStatus(
+    @Param('id') id: number,
+    @Body() payloadDto: CourseStatusPayloadDto,
+    @Req() { user }: AuthRequest,
+  ): Promise<CourseDto> {
+    return this.courseUpdateService.updateStatus(id, user, payloadDto);
   }
 
   // Cập nhật thông tin khóa học

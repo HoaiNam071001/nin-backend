@@ -46,7 +46,7 @@ export class CourseService {
 
   async findByOwner(user: User, pagable: PagingRequestDto<Course>) {
     const query = new PagingRequestDto(pagable, ['name']).mapOrmQuery({
-      relations: ['owner'],
+      relations: ['owner', 'topics'],
       where: {
         ownerId: user.id,
       },

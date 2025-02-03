@@ -1,8 +1,16 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { QueryFailedError, Repository } from 'typeorm';
 import { Course } from '../entity/course.entity';
-import { CourseDto, CoursePayloadDto } from '../dto/course.dto';
+import {
+  CourseDto,
+  CoursePayloadDto,
+  CourseStatusPayloadDto,
+} from '../dto/course.dto';
 import { CustomNotFoundException } from '../../../common/exceptions/http/custom-not-found.exception';
 import { DuplicateEntryException } from '../../../common/exceptions/database/duplicate-entry.exception';
 import { User } from '../../user/entity/user.entity';
@@ -110,7 +118,7 @@ export class CourseUpdateService {
     course.thumbnail = payload.thumbnail ?? course.thumbnail;
     course.price = payload.price ?? course.price;
     course.estimatedTime = payload.estimatedTime ?? course.estimatedTime;
-    course.status = payload.status ?? course.status;
+    // course.status = payload.status ?? course.status;
     course.summary = payload.summary ?? course.summary;
     if (payload.categoryId !== course.category?.id) {
       course.category = await this.categoryService.findByById(
@@ -150,5 +158,35 @@ export class CourseUpdateService {
 
   async remove(id: number): Promise<void> {
     await this.courseRepository.delete(id);
+  }
+
+  async updateStatus(
+    id: number,
+    user: User,
+    payloadDto: CourseStatusPayloadDto,
+  ): Promise<CourseDto> {
+    if (!payloadDto) {
+      throw new BadRequestException();
+    }
+    const course = await this.courseRepository.findOne({ where: { id } });
+
+    if (!course) {
+      throw new CustomNotFoundException('Course not found');
+    }
+
+    course.status = payloadDto.status;
+
+    try {
+      await this.courseRepository.save(course);
+      return await this.courseService.getById(id);
+    } catch (error) {
+      if (
+        error instanceof QueryFailedError &&
+        DuplicateEntryException.handleQueryFailedError(error)
+      ) {
+        throw new DuplicateEntryException();
+      }
+      throw error;
+    }
   }
 }

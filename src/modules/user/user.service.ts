@@ -59,9 +59,9 @@ export class UserService {
   // Cập nhật thông tin người dùng
   async update(id: number, updateUserDto: UpdateUserDto) {
     await this.usersRepository.update(id, updateUserDto); // Cập nhật thông tin người dùng
-    await this.searchService.indexDocument('users', id.toString(), {
-      ...updateUserDto,
-    });
+    // await this.searchService.indexDocument('users', id.toString(), {
+    //   ...updateUserDto,
+    // });
     return this.findById(id); // Trả về người dùng đã cập nhật
   }
 

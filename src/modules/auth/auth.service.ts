@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   UnauthorizedException,
@@ -11,6 +12,8 @@ import { User } from '../user/entity/user.entity';
 import { SignupDto } from './dto/signup.dto';
 import { JwtPayload } from './jwt-payload.interface';
 import { AuthResponseDto } from './dto/response.dto';
+import { plainToClass } from 'class-transformer';
+import { UserDto } from '../user/dto/user.dto';
 
 @Injectable()
 export class AuthService {
@@ -30,11 +33,11 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    // Tạo và trả về token
-    const payload = { email: user.email, sub: user.id }; // sub thường là ID người dùng
+    // Tạoput và trả về token
+    const payload: JwtPayload = { sub: user.id }; // sub thường là ID người dùng
     return {
       token: this.jwtService.sign(payload),
-      user: user,
+      user: plainToClass(UserDto, user),
     };
   }
   private async validatePassword(
@@ -55,14 +58,26 @@ export class AuthService {
     }
 
     // Tạo người dùng mới
-    const { firstName, lastName } = signupDto;
-    signupDto.fullName = `${firstName} ${lastName}`;
+    // const { firstName, lastName } = signupDto;
+    // signupDto.fullName = `${firstName} ${lastName}`;
     const user = await this.userService.create(signupDto);
-    const payload: JwtPayload = { email: user.email, sub: user.id }; // sub thường là ID người dùng
+    const payload: JwtPayload = { sub: user.id }; // sub thường là ID người dùng
 
     return {
       token: this.jwtService.sign(payload),
       user,
     };
+  }
+
+  async changePass(id: number, password: string) {
+    const existingUser = await this.userService.findById(id);
+    if (!existingUser) {
+      throw new BadRequestException('');
+    }
+    existingUser.password = await bcrypt.hash(password, 10);
+    const user = await this.userService.update(id, {
+      password: existingUser.password,
+    });
+    return user;
   }
 }

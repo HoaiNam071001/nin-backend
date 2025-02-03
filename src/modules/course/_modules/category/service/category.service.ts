@@ -26,11 +26,11 @@ export class CategoryService {
   }
 
   async findParentList(pagable: PagingRequestDto<Category>) {
-    const query = new PagingRequestDto(pagable, ['name']).mapOrmQuery();
-    query.where = {
-      ...query.where,
-      parentCategory: { id: null },
-    };
+    const query = new PagingRequestDto(pagable, ['name']).mapOrmQuery({
+      where: {
+        parentCategory: { id: null },
+      },
+    });
     const [data, total] = await this.categoryRepository.findAndCount(query);
 
     return new PaginationResponseDto<CategoryDto>(
@@ -52,11 +52,9 @@ export class CategoryService {
   }
 
   async findChildList(parentId: number, pagable: PagingRequestDto<Category>) {
-    const query = new PagingRequestDto(pagable, ['name']).mapOrmQuery();
-    query.where = {
-      ...query.where,
-      parentCategory: { id: parentId },
-    };
+    const query = new PagingRequestDto(pagable, ['name']).mapOrmQuery({
+      where: { parentCategory: { id: parentId } },
+    });
     const [data, total] = await this.categoryRepository.findAndCount(query);
 
     return new PaginationResponseDto<CategoryDto>(

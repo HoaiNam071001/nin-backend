@@ -45,7 +45,7 @@ export class CourseTopic {
   @PrimaryColumn({ name: 'topic_id' })
   topicId: number;
 
-  @ManyToOne(() => Course, (course) => course.courseTopics, {
+  @ManyToOne(() => Course, (course) => course.topics, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'course_id' })
