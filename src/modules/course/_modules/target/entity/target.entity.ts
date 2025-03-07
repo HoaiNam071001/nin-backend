@@ -4,10 +4,10 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
-  OneToMany,
+  ManyToOne,
 } from 'typeorm';
 import { Course } from '../../../entity/course.entity';
-import { CourseTarget } from '../../../../../common/enums/course.enum';
+import { CourseTarget } from '../../../model/course.model';
 
 @Entity('course_targets')
 export class Target {
@@ -34,6 +34,6 @@ export class Target {
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
-  @OneToMany(() => Course, (course) => course.level)
-  courses?: Course[];
+  @ManyToOne(() => Course, (course) => course.targets)
+  course?: Course;
 }

@@ -5,7 +5,10 @@ import { Repository } from 'typeorm';
 import { TopicDto } from '../dto/topic.dto';
 import { plainToClass } from 'class-transformer';
 import { filter, includes, map } from 'lodash';
-import { PagingRequestDto } from '../../../../../common/dto/pagination-request.dto';
+import {
+  PagingRequestBase,
+  PagingRequestDto,
+} from '../../../../../common/dto/pagination-request.dto';
 import { PaginationResponseDto } from '../../../../../common/dto/pagination-response.dto';
 
 @Injectable()
@@ -91,8 +94,8 @@ export class TopicService {
     }).filter((e) => e);
   }
 
-  async findMany(pagable: PagingRequestDto<Topic>) {
-    const query = new PagingRequestDto(pagable, ['name']).mapOrmQuery();
+  async findMany(pagable: PagingRequestBase) {
+    const query = new PagingRequestDto<Topic>(pagable, ['name']).mapOrmQuery();
     const [data, total] = await this.topicRepository.findAndCount(query);
 
     const value = new PaginationResponseDto<TopicDto>(

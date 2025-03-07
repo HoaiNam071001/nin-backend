@@ -1,5 +1,5 @@
 import { IsOptional, IsString } from 'class-validator';
-import { CourseStatus } from '../../../common/enums/roles.enum';
+import { CourseStatus } from '../model/course.model';
 
 export class CourseSearchFilterDto {
   @IsString()

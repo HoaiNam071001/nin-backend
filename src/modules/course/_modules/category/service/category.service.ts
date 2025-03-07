@@ -5,7 +5,10 @@ import { IsNull, Repository } from 'typeorm';
 import { plainToClass } from 'class-transformer';
 import { CategoryDto } from '../dto/category.dto';
 import { CustomNotFoundException } from '../../../../../common/exceptions/http/custom-not-found.exception';
-import { PagingRequestDto } from '../../../../../common/dto/pagination-request.dto';
+import {
+  PagingRequestBase,
+  PagingRequestDto,
+} from '../../../../../common/dto/pagination-request.dto';
 import { PaginationResponseDto } from '../../../../../common/dto/pagination-response.dto';
 
 @Injectable()
@@ -25,12 +28,14 @@ export class CategoryService {
     return category;
   }
 
-  async findParentList(pagable: PagingRequestDto<Category>) {
-    const query = new PagingRequestDto(pagable, ['name']).mapOrmQuery({
-      where: {
-        parentCategory: { id: null },
+  async findParentList(pagable: PagingRequestBase) {
+    const query = new PagingRequestDto<Category>(pagable, ['name']).mapOrmQuery(
+      {
+        where: {
+          parentCategory: { id: null },
+        },
       },
-    });
+    );
     const [data, total] = await this.categoryRepository.findAndCount(query);
 
     return new PaginationResponseDto<CategoryDto>(
@@ -51,10 +56,12 @@ export class CategoryService {
     return categories.map((e) => plainToClass(CategoryDto, e));
   }
 
-  async findChildList(parentId: number, pagable: PagingRequestDto<Category>) {
-    const query = new PagingRequestDto(pagable, ['name']).mapOrmQuery({
-      where: { parentCategory: { id: parentId } },
-    });
+  async findChildList(parentId: number, pagable: PagingRequestBase) {
+    const query = new PagingRequestDto<Category>(pagable, ['name']).mapOrmQuery(
+      {
+        where: { parentCategory: { id: parentId } },
+      },
+    );
     const [data, total] = await this.categoryRepository.findAndCount(query);
 
     return new PaginationResponseDto<CategoryDto>(

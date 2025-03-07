@@ -40,44 +40,6 @@ export class CourseUpdateService {
         owner: user,
       });
 
-      // const assignRelation = async (
-      //   relationField: 'category' | 'subCategory' | 'level',
-      //   dtoField: 'categoryId' | 'subCategoryId' | 'levelId',
-      //   repository: any,
-      //   errorMessage: string,
-      // ) => {
-      //   const relationId = courseDto[dtoField];
-      //   if (relationId) {
-      //     const relationEntity = await repository.findOne({
-      //       where: { id: relationId },
-      //     });
-      //     if (!relationEntity) {
-      //       throw new CustomNotFoundException(errorMessage);
-      //     }
-      //     course[relationField] = relationEntity;
-      //   }
-      // };
-
-      // await Promise.all([
-      //   assignRelation(
-      //     'category',
-      //     'categoryId',
-      //     this.categoryRepository,
-      //     'Category not found',
-      //   ),
-      //   assignRelation(
-      //     'subCategory',
-      //     'subCategoryId',
-      //     this.categoryRepository,
-      //     'Subcategory not found',
-      //   ),
-      //   assignRelation(
-      //     'level',
-      //     'levelId',
-      //     this.levelRepository,
-      //     'Level not found',
-      //   ),
-      // ]);
       const savedCourse = await this.courseRepository.save(course);
 
       await this.topicService.createByCourse(
@@ -111,32 +73,35 @@ export class CourseUpdateService {
         'You do not have permission to update this course',
       );
     }
-
     course.name = payload.name ?? course.name;
-    course.slug = payload.slug ?? generateSlug(payload.name); // Tạo slug mới nếu tên thay đổi
+    // course.slug = payload.slug ?? generateSlug(payload.name); // Tạo slug mới nếu tên thay đổi
     course.description = payload.description ?? course.description;
     course.thumbnail = payload.thumbnail ?? course.thumbnail;
     course.price = payload.price ?? course.price;
     course.estimatedTime = payload.estimatedTime ?? course.estimatedTime;
-    // course.status = payload.status ?? course.status;
     course.summary = payload.summary ?? course.summary;
-    if (payload.categoryId !== course.category?.id) {
+
+    if (payload.categoryId && payload.categoryId !== course.category?.id) {
       course.category = await this.categoryService.findByById(
         payload.categoryId,
       );
     }
 
-    if (payload.subCategoryId !== course.subCategory?.id) {
+    if (
+      payload.subCategoryId &&
+      payload.subCategoryId !== course.subCategory?.id
+    ) {
       course.subCategory = await this.categoryService.findByById(
         payload.subCategoryId,
       );
     }
 
-    if (payload.levelId !== course.level?.id) {
+    if (payload.levelId && payload.levelId !== course.level?.id) {
       course.level = await this.levelService.findByById(payload.levelId);
     }
 
     if (
+      payload.topicIds &&
       !(
         payload.topicIds?.length === course.topics?.length &&
         payload.topicIds?.every((x) => course.topics?.some((e) => e.id === x))

@@ -2,17 +2,25 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Course } from '../entity/course.entity';
 import { In, Repository } from 'typeorm';
-import { PagingRequestDto } from '../../../common/dto/pagination-request.dto';
-import { CourseDto } from '../dto/course.dto';
+import {
+  PagingRequestBase,
+  PagingRequestDto,
+} from '../../../common/dto/pagination-request.dto';
+import { CourseDto, FullCourseDto } from '../dto/course.dto';
 import { PaginationResponseDto } from '../../../common/dto/pagination-response.dto';
 import { plainToClass } from 'class-transformer';
 import { CourseSearchFilterDto } from '../dto/course-search.dto';
 import { CategoryDto } from '../_modules/category/dto/category.dto';
 import { LevelDto } from '../_modules/level/dto/level.dto';
+import { SearchService } from '../../ai/services/search.service';
+import { CustomNotFoundException } from '../../../common/exceptions/http/custom-not-found.exception';
+import { InstructorDto } from '../dto/instructor.dto';
+import { ShortUser } from '../../user/dto/user.dto';
 
 @Injectable()
 export class CourseSearchService {
   constructor(
+    private searchService: SearchService,
     @InjectRepository(Course)
     private readonly courseRepository: Repository<Course>,
   ) {}
@@ -44,13 +52,10 @@ export class CourseSearchService {
     return where;
   }
 
-  async find(
-    pagable: PagingRequestDto<Course>,
-    filtersDto: CourseSearchFilterDto,
-  ) {
+  async find(pagable: PagingRequestBase, filtersDto: CourseSearchFilterDto) {
     const where = this.buildFilterQuery(filtersDto);
 
-    const query = new PagingRequestDto(pagable, [
+    const query = new PagingRequestDto<Course>(pagable, [
       'name',
       'summary',
     ]).mapOrmQuery({
@@ -70,5 +75,53 @@ export class CourseSearchService {
       pagable.page,
       pagable.size,
     );
+  }
+
+  async getByKeyword(paging: PagingRequestBase) {
+    const ids = await this.searchService.search(paging);
+    if (!ids?.length) {
+      return []; // Return an empty array if no IDs are found
+    }
+
+    const courses = await this.courseRepository.find({
+      where: { id: In(ids) }, // Use In() to find multiple IDs
+    });
+
+    return courses;
+  }
+
+  async findBySlug(slug: string): Promise<FullCourseDto> {
+    const course = await this.courseRepository.findOne({
+      where: { slug },
+      relations: [
+        'owner',
+        'category',
+        'subCategory',
+        'level',
+        'topics',
+        'topics.topic',
+        'instructors',
+        'instructors.user',
+        'targets',
+      ],
+    });
+
+    if (!course) {
+      throw new CustomNotFoundException('Course not found');
+    }
+    return {
+      ...plainToClass(FullCourseDto, course),
+      category: plainToClass(CategoryDto, course.category),
+      subCategory: plainToClass(CategoryDto, course.subCategory),
+      level: plainToClass(LevelDto, course.level),
+      topics: course.topics.map((t) => t.topic),
+      instructors: plainToClass(
+        InstructorDto,
+        course.instructors.map((i) => ({
+          ...i,
+          user: plainToClass(ShortUser, i.user),
+        })),
+      ),
+    };
   }
 }

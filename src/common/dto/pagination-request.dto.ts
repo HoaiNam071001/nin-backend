@@ -9,7 +9,14 @@ export enum SortOrder {
   DESC = 'DESC',
 }
 
-export class PagingRequestDto<T> {
+export interface PagingRequestBase {
+  page?: number;
+  size?: number;
+  sort?: string[] | string;
+  keyword?: string;
+}
+
+export class PagingRequestDto<T> implements PagingRequestBase {
   @IsOptional()
   @IsInt()
   @IsPositive()
@@ -22,7 +29,7 @@ export class PagingRequestDto<T> {
 
   @IsOptional()
   @IsString({ each: true })
-  private _sort?: string[];
+  private _sort?: string[] | string;
 
   @IsOptional()
   @IsString()
@@ -31,7 +38,7 @@ export class PagingRequestDto<T> {
   private searchableFields: (keyof T)[];
 
   constructor(
-    pagingRequest: PagingRequestDto<T>,
+    pagingRequest: PagingRequestBase,
     searchableFields: (keyof T)[] = [],
   ) {
     this._page = pagingRequest?.page || FIRST_PAGE;
@@ -49,7 +56,7 @@ export class PagingRequestDto<T> {
     return this._size || DEFAULT_PAGE_SIZE;
   }
 
-  get sort(): string[] | undefined {
+  get sort(): string[] | string {
     return this._sort;
   }
 

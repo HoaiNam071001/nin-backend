@@ -6,7 +6,10 @@ import { CourseDto } from '../dto/course.dto';
 import { CustomNotFoundException } from '../../../common/exceptions/http/custom-not-found.exception';
 import { User } from '../../user/entity/user.entity';
 import { plainToClass } from 'class-transformer';
-import { PagingRequestDto } from '../../../common/dto/pagination-request.dto';
+import {
+  PagingRequestBase,
+  PagingRequestDto,
+} from '../../../common/dto/pagination-request.dto';
 import { PaginationResponseDto } from '../../../common/dto/pagination-response.dto';
 import { ShortUser } from '../../user/dto/user.dto';
 import { CategoryDto } from '../_modules/category/dto/category.dto';
@@ -44,8 +47,8 @@ export class CourseService {
     return courseDto;
   }
 
-  async findByOwner(user: User, pagable: PagingRequestDto<Course>) {
-    const query = new PagingRequestDto(pagable, ['name']).mapOrmQuery({
+  async findByOwner(user: User, pagable: PagingRequestBase) {
+    const query = new PagingRequestDto<Course>(pagable, ['name']).mapOrmQuery({
       relations: ['owner', 'topics'],
       where: {
         ownerId: user.id,

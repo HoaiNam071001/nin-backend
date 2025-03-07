@@ -8,6 +8,7 @@ import {
   Req,
   Body,
   ForbiddenException,
+  Query,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -15,6 +16,9 @@ import { AuthRequest } from '../../common/interfaces';
 import { Role } from '../../common/enums/roles.enum';
 import { User } from './entity/user.entity';
 import { UpdateRoleDto } from './dto/role.dto';
+import { PagingRequestDto } from '../../common/dto/pagination-request.dto';
+import { SearchUserPayload, ShortUser } from './dto/user.dto';
+import { PaginationResponseDto } from '../../common/dto/pagination-response.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('users')
@@ -39,10 +43,13 @@ export class UserController {
     return this.usersService.addRoleToUser(user.id, request.role);
   }
 
-  // @Get()
-  // findAll(): Promise<User[]> {
-  //   return this.usersService.findAll();
-  // }
+  @Get('search')
+  findAll(
+    @Query() paging: PagingRequestDto<User>,
+    @Query() filtersDto: SearchUserPayload,
+  ): Promise<PaginationResponseDto<ShortUser>> {
+    return this.usersService.find(paging, filtersDto);
+  }
 
   @Get('profile')
   findCurrent(@Req() { user }: AuthRequest) {

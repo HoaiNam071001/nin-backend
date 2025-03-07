@@ -1,6 +1,6 @@
 import { Exclude, Expose } from 'class-transformer';
 import { IsInt, IsString } from 'class-validator';
-import { CourseTarget } from '../../../../../common/enums/course.enum';
+import { CourseTarget } from '../../../model/course.model';
 
 export class TargetDto {
   @Expose()

@@ -9,13 +9,16 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from '../../user/entity/user.entity';
-import { CourseStatus } from '../../../common/enums/roles.enum';
 import { Category } from '../_modules/category/entity/category.entity';
 import { Exclude } from 'class-transformer';
 import { Level } from '../_modules/level/entity/level.entity';
 import { CourseTopic } from '../_modules/topic/entity/topic.entity';
 import { NFile } from '../../file/entity/file.entity';
 import { Section } from '../_modules/section/entity/section.entity';
+import { CourseStatus } from '../model/course.model';
+import { CourseSubscription } from '../_modules/subscription/entity/subscription.entity';
+import { Instructor } from './instructor.entity';
+import { Target } from '../_modules/target/entity/target.entity';
 @Entity('courses')
 export class Course {
   @PrimaryGeneratedColumn()
@@ -98,4 +101,13 @@ export class Course {
 
   @OneToMany(() => Section, (section) => section.course)
   sections: Section[];
+
+  @OneToMany(() => CourseSubscription, (sub) => sub.course)
+  courseSubscriptions: CourseSubscription[];
+
+  @OneToMany(() => Instructor, (sub) => sub.course)
+  instructors: Instructor[];
+
+  @OneToMany(() => Target, (sub) => sub.course)
+  targets: Target[];
 }

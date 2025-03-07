@@ -9,7 +9,6 @@ import {
   JoinColumn,
   OneToOne,
 } from 'typeorm';
-import { SectionType } from '../../../../../common/enums/roles.enum';
 import { Course } from '../../../entity/course.entity';
 import { Video } from '../../video/entity/video.entity';
 import { VideoDto } from '../../video/dto/video.dto';
@@ -17,6 +16,7 @@ import { Post } from '../../post/entity/post.entity';
 import { PostDto } from '../../post/dto/post.dto';
 import { FileDto } from '../../../../file/dto/file.dto';
 import { NFile } from '../../../../file/entity/file.entity';
+import { SectionType } from '../model/section.model';
 
 @Entity('sections')
 export class Section {

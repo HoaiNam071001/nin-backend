@@ -3,8 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Target } from '../entity/target.entity';
 import { TargetDto } from '../dto/target.dto';
-import { CourseTarget } from '../../../../../common/enums/course.enum';
 import { plainToClass } from 'class-transformer';
+import { CourseTarget } from '../../../model/course.model';
 
 @Injectable()
 export class TargetService {

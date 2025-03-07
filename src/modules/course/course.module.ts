@@ -14,12 +14,21 @@ import { VideoModule } from './_modules/video/video.module';
 import { TargetModule } from './_modules/target/target.module';
 import { CourseSearchController } from './controller/course-search.controller';
 import { CourseSearchService } from './service/course-search.service';
+import { CourseSubscriptionModule } from './_modules/subscription/subscription.module';
+import { InstructorService } from './service/instructor.service';
+import { Instructor } from './entity/instructor.entity';
+import { SearchModule } from '../ai/search.module';
 
-const SERVICES = [CourseService, CourseUpdateService, CourseSearchService];
+const SERVICES = [
+  CourseService,
+  CourseUpdateService,
+  CourseSearchService,
+  InstructorService,
+];
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Course]),
+    TypeOrmModule.forFeature([Course, Instructor]),
     UserModule,
     LevelModule,
     CategoryModule,
@@ -28,6 +37,8 @@ const SERVICES = [CourseService, CourseUpdateService, CourseSearchService];
     PostModule,
     VideoModule,
     TargetModule,
+    CourseSubscriptionModule,
+    SearchModule,
   ],
   providers: [...SERVICES],
   controllers: [CourseController, CourseSearchController],

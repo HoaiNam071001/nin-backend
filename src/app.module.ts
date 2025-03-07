@@ -32,18 +32,4 @@ import { FileModule } from './modules/file/file.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {
-  // configure(consumer: MiddlewareConsumer) {
-  //   consumer
-  //     .apply(JwtMiddleware)
-  //     .exclude(
-  //       { path: 'auth/signin', method: RequestMethod.POST },
-  //       { path: 'auth/signup', method: RequestMethod.POST },
-  //     )
-  //     .forRoutes('*'); // Sử dụng cho tất cả các routes
-  // }
-  // configure(consumer: MiddlewareConsumer) {
-  //   // Bảo vệ tất cả các route trong module này
-  //   consumer.apply(JwtAuthGuard).forRoutes(UserController);
-  // }
-}
+export class AppModule {}

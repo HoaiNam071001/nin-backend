@@ -13,6 +13,8 @@ import { UserRole } from './user-role.entity';
 import { Exclude } from 'class-transformer';
 import { NFile } from '../../file/entity/file.entity';
 import { Topic } from '../../course/_modules/topic/entity/topic.entity';
+import { CourseSubscription } from '../../course/_modules/subscription/entity/subscription.entity';
+import { AIConversation, AIMessage } from '../../ai/entity/chatbot.entity';
 
 @Entity('users') // Tên bảng trong cơ sở dữ liệu
 export class User {
@@ -69,4 +71,13 @@ export class User {
 
   @OneToMany(() => NFile, (file) => file.user)
   files: NFile[];
+
+  @OneToMany(() => CourseSubscription, (sub) => sub.user)
+  courseSubscriptions: CourseSubscription[];
+
+  @OneToMany(() => AIMessage, (sub) => sub.user)
+  messages: AIMessage[];
+
+  @OneToMany(() => AIConversation, (sub) => sub.user)
+  conversations: AIConversation[];
 }

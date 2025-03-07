@@ -4,7 +4,7 @@ import { UserController } from './user.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entity/user.entity';
 import { UserRole } from './entity/user-role.entity';
-import { SearchModule } from '../search/search.module';
+import { SearchModule } from '../ai/search.module';
 
 @Module({
   imports: [TypeOrmModule.forFeature([User, UserRole]), SearchModule],
