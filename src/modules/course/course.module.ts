@@ -14,10 +14,13 @@ import { VideoModule } from './_modules/video/video.module';
 import { TargetModule } from './_modules/target/target.module';
 import { CourseSearchController } from './controller/course-search.controller';
 import { CourseSearchService } from './service/course-search.service';
-import { CourseSubscriptionModule } from './_modules/subscription/subscription.module';
 import { InstructorService } from './service/instructor.service';
 import { Instructor } from './entity/instructor.entity';
 import { SearchModule } from '../ai/search.module';
+import { Discount } from './entity/discount.entity';
+import { FileModule } from '../file/file.module';
+import { PaymentModule } from './_modules/payment/payment.module';
+import { CartModule } from './_modules/cart/cart.module';
 
 const SERVICES = [
   CourseService,
@@ -28,7 +31,7 @@ const SERVICES = [
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Course, Instructor]),
+    TypeOrmModule.forFeature([Course, Instructor, Discount]),
     UserModule,
     LevelModule,
     CategoryModule,
@@ -37,8 +40,11 @@ const SERVICES = [
     PostModule,
     VideoModule,
     TargetModule,
-    CourseSubscriptionModule,
+    PaymentModule,
     SearchModule,
+    FileModule,
+    CartModule,
+    forwardRef(() => PaymentModule),
   ],
   providers: [...SERVICES],
   controllers: [CourseController, CourseSearchController],

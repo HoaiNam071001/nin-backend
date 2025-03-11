@@ -13,8 +13,13 @@ import { UserRole } from './user-role.entity';
 import { Exclude } from 'class-transformer';
 import { NFile } from '../../file/entity/file.entity';
 import { Topic } from '../../course/_modules/topic/entity/topic.entity';
-import { CourseSubscription } from '../../course/_modules/subscription/entity/subscription.entity';
 import { AIConversation, AIMessage } from '../../ai/entity/chatbot.entity';
+import {
+  CourseSubscription,
+  PaymentTransaction,
+} from '../../course/_modules/payment/payment.entity';
+import { CartItem } from '../../course/_modules/cart/cart.entity';
+import { Instructor } from '../../course/entity/instructor.entity';
 
 @Entity('users') // Tên bảng trong cơ sở dữ liệu
 export class User {
@@ -75,9 +80,18 @@ export class User {
   @OneToMany(() => CourseSubscription, (sub) => sub.user)
   courseSubscriptions: CourseSubscription[];
 
+  @OneToMany(() => Instructor, (sub) => sub.user)
+  instructors: Instructor[];
+
   @OneToMany(() => AIMessage, (sub) => sub.user)
   messages: AIMessage[];
 
   @OneToMany(() => AIConversation, (sub) => sub.user)
   conversations: AIConversation[];
+
+  @OneToMany(() => CartItem, (sub) => sub.course)
+  cartItems: CartItem[];
+
+  @OneToMany(() => PaymentTransaction, (sub) => sub.user)
+  transactions: PaymentTransaction[];
 }

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Course } from '../entity/course.entity';
-import { In, Repository } from 'typeorm';
+import { In, LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
 import {
   PagingRequestBase,
   PagingRequestDto,
@@ -16,13 +16,24 @@ import { SearchService } from '../../ai/services/search.service';
 import { CustomNotFoundException } from '../../../common/exceptions/http/custom-not-found.exception';
 import { InstructorDto } from '../dto/instructor.dto';
 import { ShortUser } from '../../user/dto/user.dto';
+import { Discount } from '../entity/discount.entity';
+import { SectionService } from '../_modules/section/service/section.service';
+import { FileService } from '../../file/file.service';
+import { DiscountDto } from '../dto/discount.dto';
+import { PaymentService } from '../_modules/payment/payment.service';
 
 @Injectable()
 export class CourseSearchService {
   constructor(
+    private fileService: FileService,
+    private paymentService: PaymentService,
+    private sectionService: SectionService,
     private searchService: SearchService,
     @InjectRepository(Course)
     private readonly courseRepository: Repository<Course>,
+
+    @InjectRepository(Discount) // Inject Discount repository
+    private readonly discountRepository: Repository<Discount>,
   ) {}
 
   private buildFilterQuery(filtersDto: CourseSearchFilterDto): any {
@@ -109,6 +120,16 @@ export class CourseSearchService {
     if (!course) {
       throw new CustomNotFoundException('Course not found');
     }
+    const now = new Date(); // Lấy thời gian hiện tại
+    const discounts = await this.discountRepository.find({
+      where: {
+        courseId: course?.id,
+        startDate: LessThanOrEqual(now),
+        endDate: MoreThanOrEqual(now),
+      },
+    });
+    const totalSection = await this.sectionService.countByCourse(course.id);
+    const totalFile = await this.fileService.countByCourse(course.id);
     return {
       ...plainToClass(FullCourseDto, course),
       category: plainToClass(CategoryDto, course.category),
@@ -122,6 +143,9 @@ export class CourseSearchService {
           user: plainToClass(ShortUser, i.user),
         })),
       ),
+      totalSection,
+      totalFile,
+      discounts: plainToClass(DiscountDto, discounts),
     };
   }
 }

@@ -64,4 +64,11 @@ export class FileService {
     });
     return plainToClass(FileDto, section);
   }
+
+  async countByCourse(courseId: number): Promise<number> {
+    const count = await this.fileRepository.count({
+      where: { courseId },
+    });
+    return count;
+  }
 }

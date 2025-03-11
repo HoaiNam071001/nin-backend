@@ -9,6 +9,7 @@ import {
   Put,
   Query,
   Delete,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { CourseService } from '../service/course.service';
 import {
@@ -22,6 +23,7 @@ import { CourseUpdateService } from '../service/course-update.service';
 import { PagingRequestDto } from '../../../common/dto/pagination-request.dto';
 import { InstructorService } from '../service/instructor.service';
 import { InstructorPayloadDto } from '../dto/instructor.dto';
+import { DiscountPayloadDto } from '../dto/discount.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('course')
@@ -39,6 +41,14 @@ export class CourseController {
     @Query() paging: PagingRequestDto<CourseDto>,
   ) {
     return this.courseService.findByOwner(user, paging);
+  }
+
+  @Get('registered')
+  async findRegisteredCourses(
+    @Req() { user }: AuthRequest,
+    @Query() paging: PagingRequestDto<CourseDto>,
+  ) {
+    return this.courseService.findBySubscription(user, paging);
   }
 
   @Get('instructor/:id')
@@ -108,4 +118,43 @@ export class CourseController {
   // async remove(@Param('id') id: number): Promise<void> {
   //   return this.courseService.remove(id);
   // }
+
+  // Endpoint tạo giảm giá
+  @Post(':courseId/discounts')
+  async createDiscount(
+    @Param('courseId', ParseIntPipe) courseId: number,
+    @Body() payload: DiscountPayloadDto,
+  ) {
+    payload.courseId = courseId;
+    return this.courseUpdateService.createDiscount(payload);
+  }
+
+  // Endpoint cập nhật giảm giá
+  @Put('discounts/:id')
+  async updateDiscount(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() payload: DiscountPayloadDto,
+  ) {
+    return this.courseUpdateService.updateDiscount(id, payload);
+  }
+
+  // Endpoint xóa giảm giá
+  @Delete('discounts/:id')
+  async deleteDiscount(@Param('id', ParseIntPipe) id: number) {
+    return this.courseUpdateService.deleteDiscount(id);
+  }
+
+  // Endpoint lấy giảm giá theo ID
+  @Get('discounts/:id')
+  async getDiscountById(@Param('id', ParseIntPipe) id: number) {
+    return this.courseUpdateService.getDiscountById(id);
+  }
+
+  // Endpoint lấy danh sách giảm giá của khóa học
+  @Get(':courseId/discounts')
+  async getDiscountsByCourseId(
+    @Param('courseId', ParseIntPipe) courseId: number,
+  ) {
+    return this.courseUpdateService.getDiscountsByCourseId(courseId);
+  }
 }

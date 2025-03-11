@@ -38,13 +38,13 @@ export class Instructor {
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
-  @ManyToOne(() => User, (user) => user.courseSubscriptions, {
+  @ManyToOne(() => User, (user) => user.instructors, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @ManyToOne(() => Course, (course) => course.courseSubscriptions, {
+  @ManyToOne(() => Course, (course) => course.instructors, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'course_id' })

@@ -20,6 +20,8 @@ import { CourseService } from './course.service';
 import { CategoryService } from '../_modules/category/service/category.service';
 import { LevelService } from '../_modules/level/service/level.service';
 import { TopicService } from '../_modules/topic/service/topic.service';
+import { DiscountDto, DiscountPayloadDto } from '../dto/discount.dto';
+import { Discount } from '../entity/discount.entity';
 
 @Injectable()
 export class CourseUpdateService {
@@ -30,6 +32,8 @@ export class CourseUpdateService {
     private readonly courseService: CourseService,
     @InjectRepository(Course)
     private readonly courseRepository: Repository<Course>,
+    @InjectRepository(Discount) // Inject Discount repository
+    private readonly discountRepository: Repository<Discount>,
   ) {}
 
   async create(courseDto: CoursePayloadDto, user: User): Promise<CourseDto> {
@@ -153,5 +157,58 @@ export class CourseUpdateService {
       }
       throw error;
     }
+  }
+
+  async createDiscount(payload: DiscountPayloadDto): Promise<DiscountDto> {
+    try {
+      const discount = this.discountRepository.create(payload);
+      const savedDiscount = await this.discountRepository.save(discount);
+      return plainToClass(DiscountDto, savedDiscount);
+    } catch (error) {
+      if (
+        error instanceof QueryFailedError &&
+        DuplicateEntryException.handleQueryFailedError(error)
+      ) {
+        throw new DuplicateEntryException();
+      }
+      throw error;
+    }
+  }
+
+  async updateDiscount(
+    id: number,
+    payload: DiscountPayloadDto,
+  ): Promise<DiscountDto> {
+    const discount = await this.discountRepository.findOne({ where: { id } });
+    if (!discount) {
+      throw new CustomNotFoundException('Discount not found');
+    }
+
+    Object.assign(discount, payload);
+    const updatedDiscount = await this.discountRepository.save(discount);
+    return plainToClass(DiscountDto, updatedDiscount);
+  }
+
+  async deleteDiscount(id: number): Promise<void> {
+    const discount = await this.discountRepository.findOne({ where: { id } });
+    if (!discount) {
+      throw new CustomNotFoundException('Discount not found');
+    }
+    await this.discountRepository.delete(id);
+  }
+
+  async getDiscountById(id: number): Promise<DiscountDto> {
+    const discount = await this.discountRepository.findOne({ where: { id } });
+    if (!discount) {
+      throw new CustomNotFoundException('Discount not found');
+    }
+    return plainToClass(DiscountDto, discount);
+  }
+
+  async getDiscountsByCourseId(courseId: number): Promise<DiscountDto[]> {
+    const discounts = await this.discountRepository.find({
+      where: { course: { id: courseId } },
+    });
+    return discounts.map((discount) => plainToClass(DiscountDto, discount));
   }
 }

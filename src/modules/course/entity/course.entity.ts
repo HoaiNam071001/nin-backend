@@ -16,9 +16,14 @@ import { CourseTopic } from '../_modules/topic/entity/topic.entity';
 import { NFile } from '../../file/entity/file.entity';
 import { Section } from '../_modules/section/entity/section.entity';
 import { CourseStatus } from '../model/course.model';
-import { CourseSubscription } from '../_modules/subscription/entity/subscription.entity';
 import { Instructor } from './instructor.entity';
 import { Target } from '../_modules/target/entity/target.entity';
+import { Discount } from './discount.entity';
+import {
+  CourseSubscription,
+  PaymentDetail,
+} from '../_modules/payment/payment.entity';
+import { CartItem } from '../_modules/cart/cart.entity';
 @Entity('courses')
 export class Course {
   @PrimaryGeneratedColumn()
@@ -41,6 +46,9 @@ export class Course {
 
   @Column({ type: 'int', nullable: true })
   price?: number;
+
+  @Column({ type: 'varchar', length: 3, default: 'VND' })
+  currency?: string;
 
   @Column({ name: 'estimated_time', type: 'int', nullable: true })
   estimatedTime?: number;
@@ -103,11 +111,20 @@ export class Course {
   sections: Section[];
 
   @OneToMany(() => CourseSubscription, (sub) => sub.course)
-  courseSubscriptions: CourseSubscription[];
+  subscriptions: CourseSubscription[];
 
   @OneToMany(() => Instructor, (sub) => sub.course)
   instructors: Instructor[];
 
   @OneToMany(() => Target, (sub) => sub.course)
   targets: Target[];
+
+  @OneToMany(() => Discount, (sub) => sub.course)
+  discounts: Discount[];
+
+  @OneToMany(() => CartItem, (sub) => sub.course)
+  cartItems: CartItem[];
+
+  @OneToMany(() => PaymentDetail, (sub) => sub.transaction)
+  paymentDetails: PaymentDetail[];
 }

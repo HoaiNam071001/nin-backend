@@ -1,4 +1,10 @@
-import { IsString, IsNotEmpty, IsOptional, IsInt } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsInt,
+  IsNumber,
+} from 'class-validator';
 import { Expose } from 'class-transformer';
 import { ShortUser } from '../../user/dto/user.dto';
 import { TopicDto } from '../_modules/topic/dto/topic.dto';
@@ -7,6 +13,8 @@ import { CategoryDto } from '../_modules/category/dto/category.dto';
 import { CourseStatus } from '../model/course.model';
 import { InstructorDto } from './instructor.dto';
 import { Target } from '../_modules/target/entity/target.entity';
+import { DiscountDto } from './discount.dto';
+import { CourseSubscriptionDto } from '../_modules/payment/payment.dto';
 
 export class CourseDto {
   @Expose()
@@ -36,6 +44,9 @@ export class CourseDto {
   price?: number;
 
   @IsOptional()
+  currency: string;
+
+  @IsOptional()
   @IsInt()
   estimatedTime?: number;
 
@@ -56,6 +67,9 @@ export class CourseDto {
 
   @IsOptional()
   topics?: TopicDto[];
+
+  @IsOptional()
+  discounts?: DiscountDto[];
 
   @Expose()
   createdAt: Date;
@@ -91,6 +105,9 @@ export class CoursePayloadDto {
   @IsOptional()
   @IsInt()
   price?: number;
+
+  @IsOptional()
+  currency: string;
 
   @IsOptional()
   @IsInt()
@@ -162,6 +179,9 @@ export class FullCourseDto {
   category: CategoryDto;
 
   @IsOptional()
+  currency: string;
+
+  @IsOptional()
   subCategory: CategoryDto;
 
   @IsOptional()
@@ -174,6 +194,15 @@ export class FullCourseDto {
   instructors: InstructorDto[];
 
   @IsOptional()
+  discounts: DiscountDto[];
+
+  @IsOptional()
+  totalSection: number;
+
+  @IsOptional()
+  totalFile: number;
+
+  @IsOptional()
   targets: Target[];
 
   @Expose()
@@ -181,4 +210,19 @@ export class FullCourseDto {
 
   @Expose()
   updatedAt: Date;
+}
+
+export class ProductPrice {
+  @IsNumber()
+  price: number;
+
+  currency: string;
+
+  discount: DiscountDto[];
+
+  totalSection: number;
+
+  totalFile: number;
+
+  subscription: CourseSubscriptionDto;
 }

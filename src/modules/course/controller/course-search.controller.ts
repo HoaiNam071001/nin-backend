@@ -6,7 +6,6 @@ import {
 import { Course } from '../entity/course.entity';
 import { CourseSearchService } from '../service/course-search.service';
 import { CourseSearchFilterDto } from '../dto/course-search.dto';
-
 @Controller('course-search')
 export class CourseSearchController {
   constructor(private readonly courseSearchService: CourseSearchService) {}

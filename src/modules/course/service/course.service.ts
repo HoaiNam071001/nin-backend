@@ -16,9 +16,12 @@ import { CategoryDto } from '../_modules/category/dto/category.dto';
 import { LevelDto } from '../_modules/level/dto/level.dto';
 import { UserService } from '../../user/user.service';
 import { TopicService } from '../_modules/topic/service/topic.service';
+import { DiscountDto } from '../dto/discount.dto';
+import { PaymentService } from '../_modules/payment/payment.service';
 @Injectable()
 export class CourseService {
   constructor(
+    private readonly paymentService: PaymentService,
     private readonly topicService: TopicService,
     private readonly userService: UserService,
     @InjectRepository(Course)
@@ -28,9 +31,8 @@ export class CourseService {
   async getById(id: number) {
     const course = await this.courseRepository.findOne({
       where: { id },
-      relations: ['category', 'subCategory', 'level'],
+      relations: ['category', 'subCategory', 'level', 'discounts'],
     });
-
     if (!course) {
       throw new Error('Course not found');
     }
@@ -44,6 +46,14 @@ export class CourseService {
     courseDto.subCategory = plainToClass(CategoryDto, course.subCategory);
     courseDto.level = plainToClass(LevelDto, course.level);
     courseDto.topics = await this.topicService.findByCourse(id);
+    const now = new Date(); // Lấy thời gian hiện tại
+    courseDto.discounts = course.discounts
+      .filter((discount) => {
+        const startDate = new Date(discount.startDate); // Chuyển đổi thành Date
+        const endDate = new Date(discount.endDate); // Chuyển đổi thành Date
+        return endDate >= now && startDate <= now;
+      })
+      .map((item) => plainToClass(DiscountDto, item));
     return courseDto;
   }
 
@@ -62,6 +72,35 @@ export class CourseService {
       pagable.page,
       pagable.size,
     );
+  }
+
+  async findBySubscription(user: User, pagAble: PagingRequestBase) {
+    const subscriptions = await this.paymentService.findSubscriptionsByUser(
+      user,
+      pagAble,
+    );
+    return new PaginationResponseDto<Course>(
+      subscriptions.content.map((sub) => sub.course),
+      subscriptions.totalElements,
+      pagAble.page,
+      pagAble.size,
+    );
+    // const query = new PagingRequestDto<Course>(pagAble, ['name']).mapOrmQuery({
+    //   relations: ['owner', 'topics'],
+    //   where: {
+    //     subscriptions: {
+    //       userId: user.id,
+    //     },
+    //   },
+    // });
+    // const [courses, total] = await this.courseRepository.findAndCount(query);
+
+    // return new PaginationResponseDto<Course>(
+    //   courses.map((e) => plainToClass(Course, e)),
+    //   total,
+    //   pagAble.page,
+    //   pagAble.size,
+    // );
   }
 
   async findOne(id: number): Promise<Course> {

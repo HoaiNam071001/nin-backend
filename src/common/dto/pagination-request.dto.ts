@@ -35,11 +35,11 @@ export class PagingRequestDto<T> implements PagingRequestBase {
   @IsString()
   private _keyword?: string;
 
-  private searchableFields: (keyof T)[];
+  private searchableFields: string[];
 
   constructor(
     pagingRequest: PagingRequestBase,
-    searchableFields: (keyof T)[] = [],
+    searchableFields: string[] = [],
   ) {
     this._page = pagingRequest?.page || FIRST_PAGE;
     this._size = +pagingRequest?.size || DEFAULT_PAGE_SIZE;
@@ -78,36 +78,63 @@ export class PagingRequestDto<T> implements PagingRequestBase {
       const where = query.where;
       const keywordCondition = this.searchableFields.map((field) => ({
         ...where,
-        [field]: ILike(`%${this.keyword?.toLowerCase()}%`),
+        ...convertStringToNestedObject(
+          field as string,
+          ILike(`%${this.keyword?.toLowerCase()}%`),
+        ),
       }));
+
       query.where = keywordCondition as FindOptionsWhere<T>[];
     }
 
     // Thêm tùy chọn sắp xếp vào query
     if (this.sort) {
       if (typeof this.sort === 'string') {
-        const [field, direction] = (this.sort as string)?.split(':');
+        const [fieldPath, direction] = (this.sort as string)?.split(':');
+        const directionUpperCase =
+          direction.toUpperCase() === SortOrder.DESC
+            ? SortOrder.DESC
+            : SortOrder.ASC;
+
+        // Xử lý trường hợp không có quan hệ (ví dụ: 'createdAt')
         query.order = {
           ...query.order,
-          [field]:
-            direction.toUpperCase() === SortOrder.DESC
-              ? SortOrder.DESC
-              : SortOrder.ASC,
+          [fieldPath]: directionUpperCase,
         };
       } else {
         this.sort?.forEach((item) => {
-          const [field, direction] = item.split(':');
+          const [fieldPath, direction] = item.split(':');
+          const directionUpperCase =
+            direction.toUpperCase() === SortOrder.DESC
+              ? SortOrder.DESC
+              : SortOrder.ASC;
+
+          // Xử lý trường hợp không có quan hệ (ví dụ: 'createdAt')
           query.order = {
             ...query.order,
-            [field]:
-              direction.toUpperCase() === SortOrder.DESC
-                ? SortOrder.DESC
-                : SortOrder.ASC,
+            [fieldPath]: directionUpperCase,
           };
         });
       }
     }
-
     return query;
   }
+}
+
+function convertStringToNestedObject(
+  input: string,
+  value: any,
+): Record<string, SortOrder> {
+  const parts = input.split('.');
+  const result: Record<string, any> = {};
+  let current = result;
+
+  for (let i = 0; i < parts.length - 1; i++) {
+    const part = parts[i];
+    current[part] = {};
+    current = current[part];
+  }
+
+  current[parts[parts.length - 1]] = value;
+  return result;
 }

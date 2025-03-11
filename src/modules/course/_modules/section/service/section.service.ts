@@ -186,4 +186,10 @@ export class SectionService {
   async remove(id: number): Promise<void> {
     await this.sectionRepository.delete(id);
   }
+
+  async countByCourse(id: number) {
+    return this.sectionRepository.count({
+      where: { courseId: id },
+    });
+  }
 }
