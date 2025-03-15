@@ -82,7 +82,7 @@ export class CourseUpdateService {
     course.description = payload.description ?? course.description;
     course.thumbnail = payload.thumbnail ?? course.thumbnail;
     course.price = payload.price ?? course.price;
-    course.estimatedTime = payload.estimatedTime ?? course.estimatedTime;
+    // course.estimatedTime = payload.estimatedTime ?? course.estimatedTime;
     course.summary = payload.summary ?? course.summary;
 
     if (payload.categoryId && payload.categoryId !== course.category?.id) {

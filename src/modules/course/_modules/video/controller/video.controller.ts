@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Delete,
   Get,
@@ -24,9 +25,15 @@ export class VideoController {
   async addVideo(
     @UploadedFile() file: Express.Multer.File,
     @Req() { user }: AuthRequest,
-    @Param('sectionId') id: number,
+    @Param('sectionId') sectionId: number,
+    @Body('duration') duration?: string,
   ): Promise<VideoDto> {
-    return this.videoService.updateBySection(id, file, user);
+    return this.videoService.updateBySection({
+      sectionId,
+      file,
+      user,
+      duration: +duration,
+    });
   }
 
   @Get(':id')

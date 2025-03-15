@@ -79,7 +79,7 @@ export class SectionDto {
   parentId?: number;
 }
 
-export class SectionContentDto {
+export class SectionContentDto extends SectionDto {
   @IsNumber()
   id: number;
 

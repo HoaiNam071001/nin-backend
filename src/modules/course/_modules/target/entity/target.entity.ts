@@ -5,6 +5,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 import { Course } from '../../../entity/course.entity';
 import { CourseTarget } from '../../../model/course.model';
@@ -35,5 +36,6 @@ export class Target {
   updatedAt: Date;
 
   @ManyToOne(() => Course, (course) => course.targets)
+  @JoinColumn({ name: 'course_id' })
   course?: Course;
 }

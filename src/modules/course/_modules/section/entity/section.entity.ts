@@ -32,8 +32,8 @@ export class Section {
   @Column({ name: 'course_id', type: 'int' })
   courseId: number;
 
-  // @Column({ name: 'parent_id', type: 'int', nullable: true })
-  // parentId: number;
+  @Column({ name: 'parent_id', type: 'int', nullable: true })
+  parentId: number;
 
   @Column({ name: 'estimated_time', type: 'int', nullable: true })
   estimatedTime: number;

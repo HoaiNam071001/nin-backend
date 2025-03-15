@@ -9,6 +9,7 @@ import { FileDto } from '../../../../file/dto/file.dto';
 import { SectionService } from '../../section/service/section.service';
 import { plainToClass } from 'class-transformer';
 import { VideoDto } from '../dto/video.dto';
+import { MIN_TIME } from '../../../../../common/enums/unit.enum';
 
 @Injectable()
 export class VideoService {
@@ -19,11 +20,17 @@ export class VideoService {
     private readonly videoRepository: Repository<Video>,
   ) {}
 
-  async updateBySection(
-    sectionId: number,
-    file: Express.Multer.File,
-    user: User,
-  ): Promise<VideoDto> {
+  async updateBySection({
+    sectionId,
+    file,
+    user,
+    duration,
+  }: {
+    sectionId: number;
+    file: Express.Multer.File;
+    user: User;
+    duration: number;
+  }): Promise<VideoDto> {
     try {
       const section = await this.sectionService.findOneFullData(sectionId);
       if (!section) {
@@ -36,11 +43,22 @@ export class VideoService {
         courseId: section.courseId,
         sectionId,
       });
-
+      this.sectionService.update(
+        sectionId,
+        {
+          estimatedTime: duration
+            ? duration < MIN_TIME
+              ? MIN_TIME
+              : duration
+            : 0,
+        },
+        user,
+      );
       const video = await this.findBySection(sectionId);
 
       if (video) {
         video.file = savedFile;
+        video.duration = duration || 0;
         await this.videoRepository.save(video);
         return plainToClass(VideoDto, video);
       }
@@ -48,8 +66,11 @@ export class VideoService {
       const newVideo = this.videoRepository.create({
         file: savedFile,
         sectionId,
+        duration: duration || 0,
       });
+
       await this.videoRepository.save(newVideo);
+
       return await this.findBySection(sectionId);
     } catch (err) {
       throw new Error(`Error uploading file ${err}`);

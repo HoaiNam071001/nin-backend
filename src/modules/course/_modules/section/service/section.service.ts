@@ -5,7 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, Repository } from 'typeorm';
+import { IsNull, Not, Repository } from 'typeorm';
 import { Section } from '../entity/section.entity';
 import {
   CreateSectionDto,
@@ -78,22 +78,36 @@ export class SectionService {
     }
 
     const { ...updateData } = updateSectionDto;
-
-    // if (parentId) {
-    //   const parentSection = await this.sectionRepository.findOne({
-    //     where: { id: parentId },
-    //   });
-    //   if (!parentSection) {
-    //     throw new NotFoundException(
-    //       `Parent Section with ID ${parentId} not found`,
-    //     );
-    //   }
-    //   section.parent = parentSection;
-    // }
-
     Object.assign(section, updateData);
+    const newSection = await this.sectionRepository.save(section);
+    if (section.parentId && !isNaN(updateData.estimatedTime)) {
+      await this.countEstimatedTime(section.parentId);
+    }
+    return plainToClass(SectionDto, newSection);
+  }
 
-    return plainToClass(SectionDto, this.sectionRepository.save(section));
+  private async countEstimatedTime(id: number): Promise<Section> {
+    try {
+      const parentSection = await this.sectionRepository.findOne({
+        where: { id },
+      });
+
+      if (!parentSection) {
+        return;
+      }
+
+      const childSections = await this.sectionRepository.find({
+        where: { parentId: id },
+      });
+
+      parentSection.estimatedTime = childSections.reduce(
+        (total, child) => total + (child.estimatedTime || 0),
+        0,
+      );
+      return await this.sectionRepository.save(parentSection);
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
   }
 
   async findOne(id: number): Promise<SectionDto> {
@@ -121,13 +135,6 @@ export class SectionService {
       relations: ['childrens'],
       order: { createdAt: 'ASC' },
     });
-    // .createQueryBuilder('section')
-    //   .leftJoinAndSelect('section.childrens', 'childrens')
-    //   .where('section.course_id = :courseId', { courseId })
-    //   .andWhere('section.parent_id IS NULL')
-    //   .orderBy('section.created_at', 'ASC') // Sắp xếp các section cha
-    //   .addOrderBy('childrens.created_at', 'ASC') // Sắp xếp childrens theo ASC
-    //   .getMany();
     return plainToClass(SectionDto, sections);
   }
 
@@ -184,12 +191,20 @@ export class SectionService {
   }
 
   async remove(id: number): Promise<void> {
+    const section = await this.sectionRepository.findOne({ where: { id } });
+    if (!section) {
+      throw new NotFoundException(`Section not found`);
+    }
     await this.sectionRepository.delete(id);
+    if (section.parentId && !isNaN(section.estimatedTime)) {
+      this.countEstimatedTime(section.parentId);
+    }
+    return;
   }
 
   async countByCourse(id: number) {
     return this.sectionRepository.count({
-      where: { courseId: id },
+      where: { courseId: id, parentId: Not(IsNull()) },
     });
   }
 }

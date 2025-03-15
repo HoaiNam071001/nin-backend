@@ -35,4 +35,18 @@ export class DataController {
   async getFile(@Param() filePath: string, @Res() res: Response) {
     return this.dataService.readFile(filePath[0], res);
   }
+
+  // @Get('file/*')
+  // async getFile(@Param() filePath: string, @Res() res: Response) {
+  //   return this.dataService.readVideoFile(filePath[0], res);
+  // }
+
+  // @Get('file/*')
+  // async readFile(
+  //   @Param() hdfsFilePath: string,
+  //   @Res() res: Response,
+  //   @Req() req: Request, // Use @Req() to access the request object
+  // ) {
+  //   this.dataService.getSegment(hdfsFilePath[0], req, res);
+  // }
 }

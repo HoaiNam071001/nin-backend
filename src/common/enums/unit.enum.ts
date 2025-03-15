@@ -7,3 +7,4 @@ export enum Currency {
 }
 
 export const DefaultCurrency = Currency.VND;
+export const MIN_TIME = 60; // 60seconds
