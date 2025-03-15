@@ -24,6 +24,7 @@ import {
   PaymentDetail,
 } from '../_modules/payment/payment.entity';
 import { CartItem } from '../_modules/cart/cart.entity';
+import { CourseComment } from '../_modules/comment/entity/comment.entity';
 @Entity('courses')
 export class Course {
   @PrimaryGeneratedColumn()
@@ -127,4 +128,7 @@ export class Course {
 
   @OneToMany(() => PaymentDetail, (sub) => sub.transaction)
   paymentDetails: PaymentDetail[];
+
+  @OneToMany(() => CourseComment, (sub) => sub.course)
+  courseComments: CourseComment[];
 }

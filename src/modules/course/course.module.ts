@@ -21,6 +21,7 @@ import { Discount } from './entity/discount.entity';
 import { FileModule } from '../file/file.module';
 import { PaymentModule } from './_modules/payment/payment.module';
 import { CartModule } from './_modules/cart/cart.module';
+import { CourseCommentModule } from './_modules/comment/comment.module';
 
 const SERVICES = [
   CourseService,
@@ -45,6 +46,7 @@ const SERVICES = [
     FileModule,
     CartModule,
     forwardRef(() => PaymentModule),
+    CourseCommentModule,
   ],
   providers: [...SERVICES],
   controllers: [CourseController, CourseSearchController],

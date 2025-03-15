@@ -20,6 +20,7 @@ import {
 } from '../../course/_modules/payment/payment.entity';
 import { CartItem } from '../../course/_modules/cart/cart.entity';
 import { Instructor } from '../../course/entity/instructor.entity';
+import { CourseComment } from '../../course/_modules/comment/entity/comment.entity';
 
 @Entity('users') // Tên bảng trong cơ sở dữ liệu
 export class User {
@@ -94,4 +95,7 @@ export class User {
 
   @OneToMany(() => PaymentTransaction, (sub) => sub.user)
   transactions: PaymentTransaction[];
+
+  @OneToMany(() => CourseComment, (sub) => sub.user)
+  courseComments: CourseComment[];
 }
