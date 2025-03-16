@@ -10,9 +10,14 @@ export class CategoryController {
     return this.categoryService.findParentList(paging);
   }
 
-  @Get('all')
+  @Get('parent')
   async findAll() {
-    return this.categoryService.findAll();
+    return this.categoryService.findParentAll();
+  }
+
+  @Get('all')
+  async find() {
+    return this.categoryService.find();
   }
 
   @Get(':id')

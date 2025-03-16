@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query, Req, UseGuards } from '@nestjs/common';
 import {
   PagingRequestBase,
   PagingRequestDto,
@@ -6,6 +6,7 @@ import {
 import { Course } from '../entity/course.entity';
 import { CourseSearchService } from '../service/course-search.service';
 import { CourseSearchFilterDto } from '../dto/course-search.dto';
+
 @Controller('course-search')
 export class CourseSearchController {
   constructor(private readonly courseSearchService: CourseSearchService) {}
@@ -27,5 +28,13 @@ export class CourseSearchController {
   @Get('full/:slug')
   async getBySlug(@Param('slug') slug: string) {
     return this.courseSearchService.findBySlug(slug);
+  }
+
+  @Get('instructor/:id')
+  async getByInstructor(
+    @Param('id') id: number,
+    @Query() paging: PagingRequestBase,
+  ) {
+    return this.courseSearchService.findByInstructor(id, paging);
   }
 }

@@ -148,4 +148,28 @@ export class CourseSearchService {
       discounts: plainToClass(DiscountDto, discounts),
     };
   }
+
+  async findByInstructor(userId: number, pagable: PagingRequestBase) {
+    const query = new PagingRequestDto<Course>(pagable, [
+      'name',
+      'summary',
+    ]).mapOrmQuery({
+      where: {
+        instructors: {
+          userId,
+        },
+      },
+      relations: ['instructors', 'instructors.user'],
+    });
+    const [data, total] = await this.courseRepository.findAndCount(query);
+
+    return new PaginationResponseDto<CourseDto>(
+      data.map((e) => ({
+        ...plainToClass(CourseDto, e),
+      })),
+      total,
+      pagable.page,
+      pagable.size,
+    );
+  }
 }

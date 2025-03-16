@@ -17,6 +17,12 @@ export class InstructorService {
     if (!courseId || !payload?.userId) {
       throw new BadRequestException('Missing');
     }
+    const exist = await this.instructorRepository.findOne({
+      where: { course: { id: courseId }, user: { id: payload.userId } },
+    });
+    if (exist) {
+      throw new BadRequestException('Instructor already exists');
+    }
     const instructor = await this.instructorRepository.create({
       user: { id: payload.userId },
       course: { id: courseId },

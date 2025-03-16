@@ -74,7 +74,7 @@ export class UserDto {
 
   @IsOptional()
   @Expose()
-  birthDay?: Date;
+  birthDay?: string;
 
   @IsOptional()
   @IsString()

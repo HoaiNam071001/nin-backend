@@ -32,7 +32,7 @@ export class CategoryService {
     const query = new PagingRequestDto<Category>(pagable, ['name']).mapOrmQuery(
       {
         where: {
-          parentCategory: { id: null },
+          parentCategory: IsNull(),
         },
       },
     );
@@ -46,13 +46,18 @@ export class CategoryService {
     );
   }
 
-  async findAll() {
+  async findParentAll() {
     const categories = await this.categoryRepository.find({
       relations: ['subcategories'],
       where: {
         parentCategory: IsNull(),
       },
     });
+    return categories.map((e) => plainToClass(CategoryDto, e));
+  }
+
+  async find() {
+    const categories = await this.categoryRepository.find({});
     return categories.map((e) => plainToClass(CategoryDto, e));
   }
 

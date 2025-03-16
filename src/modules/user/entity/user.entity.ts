@@ -46,7 +46,7 @@ export class User {
   phoneNumber?: string;
 
   @Column({ name: 'birth_day', type: 'date', nullable: true }) // Ngày sinh
-  birthDay?: Date;
+  birthDay?: string;
 
   @Column({ type: 'varchar', length: 255, nullable: true }) // Tiểu sử
   bio?: string;

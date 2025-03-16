@@ -18,7 +18,7 @@ export class UpdateUserDto {
   phoneNumber?: string;
 
   @IsOptional()
-  birthDay?: Date;
+  birthDay?: string;
 
   @IsOptional()
   password?: string;

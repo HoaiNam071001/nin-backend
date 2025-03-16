@@ -56,6 +56,7 @@ export class CourseCommentService {
     ]).mapOrmQuery({
       where: {
         parentId: payload.parentId || IsNull(),
+        course: { id },
       },
       relations: ['user'],
     });
