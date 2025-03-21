@@ -32,6 +32,20 @@ export class CourseSubscriptionDto {
   transactionId?: number;
 }
 
+export interface ChartCoursePayload {
+  startDate: string;
+  endDate: string;
+}
+
+export interface ChartCourseResponse {
+  data: {
+    date: string;
+    value: number;
+    currency: Currency;
+    subscriptionCount: number;
+  }[];
+}
+
 export enum PaymentStatus {
   PENDING = 'PENDING',
   SUCCESS = 'SUCCESS',

@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Req,
+  Query,
 } from '@nestjs/common';
 import { PaymentService } from './payment.service';
 import {
@@ -16,6 +17,7 @@ import {
   PaymentTransaction,
 } from './payment.entity';
 import {
+  ChartCoursePayload,
   CourseSubscriptionDto,
   CreatePaymentPayloadDto,
   CreateSubscriptionDto,
@@ -23,6 +25,7 @@ import {
 } from './payment.dto';
 import { JwtAuthGuard } from '../../../auth/jwt-auth.guard';
 import { AuthRequest } from '../../../../common/interfaces';
+import { PagingRequestBase } from '../../../../common/dto/pagination-request.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('payments')
@@ -117,6 +120,23 @@ export class PaymentController {
     );
   }
 
+  @Get('subscriptions/owner')
+  async getSubscriptionByOwner(
+    @Req() { user }: AuthRequest,
+    @Query() paging: PagingRequestBase,
+    @Query() payload: ChartCoursePayload,
+  ) {
+    return this.paymentService.findSubscriptionsByOwner(user, paging, payload);
+  }
+
+  @Get('subscriptions/owner/chart')
+  async getSubscriptionByDay(
+    @Req() { user }: AuthRequest,
+    @Query() payload: ChartCoursePayload,
+  ) {
+    return this.paymentService.getSubscriptionGroupByDay(user, payload);
+  }
+
   @Get('subscriptions/:courseId')
   async getSubscription(
     @Req() { user }: AuthRequest,
@@ -124,33 +144,4 @@ export class PaymentController {
   ): Promise<CourseSubscriptionDto> {
     return this.paymentService.getCourseSubscription(user.id, courseId);
   }
-
-  // @Put('subscriptions/:id/extend')
-  // async extendSubscription(
-  //   @Param('id') id: number,
-  //   @Body('expirationDate') expirationDate: Date,
-  // ): Promise<CourseSubscription> {
-  //   return this.paymentService.extendCourseSubscription(id, expirationDate);
-  // }
-
-  // @Put('subscriptions/:id/cancel')
-  // async cancelSubscription(
-  //   @Param('id') id: number,
-  // ): Promise<CourseSubscription> {
-  //   return this.paymentService.cancelCourseSubscription(id);
-  // }
-
-  // @Post('courses/:courseId/free-subscriptions/:userId')
-  // async createFreeSubscription(
-  //   @Param('courseId') courseId: number,
-  //   @Param('userId') userId: number,
-  // ): Promise<CourseSubscription> {
-  //   const subscriptionData: Partial<CourseSubscription> = {
-  //     courseId,
-  //     userId,
-  //   };
-  //   return this.paymentService.createFreeCourseSubscription(subscriptionData);
-  // }
-  // APIs bổ sung (nếu cần)
-  // ...
 }

@@ -5,7 +5,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CourseModule } from './modules/course/course.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { Module } from '@nestjs/common';
-import { AdminModule } from './modules/admin/admin.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { databaseConfig } from './config/database.config';
 import { DataModule } from './modules/data/data.module';
@@ -26,7 +25,6 @@ import { FileModule } from './modules/file/file.module';
     UserModule,
     CourseModule,
     AuthModule,
-    AdminModule,
     DataModule,
   ],
   controllers: [AppController],

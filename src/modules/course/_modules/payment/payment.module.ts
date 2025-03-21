@@ -13,8 +13,8 @@ import { CartModule } from '../cart/cart.module';
   imports: [
     TypeOrmModule.forFeature([
       PaymentTransaction,
-      PaymentDetail,
       CourseSubscription,
+      PaymentDetail,
     ]),
     forwardRef(() => CourseModule),
     forwardRef(() => CartModule),

@@ -7,6 +7,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
+  OneToOne,
 } from 'typeorm';
 import { User } from '../../../user/entity/user.entity';
 import { Course } from '../../entity/course.entity';
@@ -56,11 +57,6 @@ export class PaymentTransaction {
     onDelete: 'CASCADE',
   })
   paymentDetails: PaymentDetail[];
-
-  @OneToMany(() => CourseSubscription, (sub) => sub.paymentTransaction, {
-    onDelete: 'CASCADE',
-  })
-  courseSubscriptions: CourseSubscription[];
 }
 
 @Entity('payment_details')
@@ -100,9 +96,14 @@ export class PaymentDetail {
 
   @Column({ type: 'varchar', length: 3, default: 'USD', nullable: true })
   currency: string;
+
+  @OneToOne(() => CourseSubscription, (sub) => sub.payment, {
+    onDelete: 'CASCADE',
+  })
+  courseSubscriptions: CourseSubscription[];
 }
 
-@Entity('course_subscriptions')
+@Entity('course_subscription')
 export class CourseSubscription {
   @PrimaryGeneratedColumn()
   id: number;
@@ -129,14 +130,14 @@ export class CourseSubscription {
   @Column({ type: 'varchar', length: 50, default: CourseSubType.ACTIVE })
   status: CourseSubType;
 
-  @Column({ name: 'payment_transaction_id', nullable: true })
+  @Column({ name: 'payment_id', nullable: true })
   transactionId: number;
 
-  @ManyToOne(() => PaymentTransaction, (trans) => trans.paymentDetails, {
+  @OneToOne(() => PaymentDetail, (trans) => trans.courseSubscriptions, {
     onDelete: 'SET NULL',
   })
-  @JoinColumn({ name: 'payment_transaction_id' })
-  paymentTransaction: PaymentTransaction;
+  @JoinColumn({ name: 'payment_id' })
+  payment: PaymentDetail;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

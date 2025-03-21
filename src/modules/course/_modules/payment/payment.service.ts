@@ -1,12 +1,14 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { Between, DataSource, In, Repository } from 'typeorm';
 import {
   CourseSubscription,
   PaymentDetail,
   PaymentTransaction,
 } from './payment.entity';
 import {
+  ChartCoursePayload,
+  ChartCourseResponse,
   CourseSubscriptionDto,
   CourseSubType,
   CreatePaymentPayloadDto,
@@ -14,7 +16,7 @@ import {
   PaymentStatus,
 } from './payment.dto';
 import { User } from '../../../user/entity/user.entity';
-import { DefaultCurrency } from '../../../../common/enums/unit.enum';
+import { Currency, DefaultCurrency } from '../../../../common/enums/unit.enum';
 import { plainToClass } from 'class-transformer';
 import { CartService } from '../cart/cart.service';
 import {
@@ -22,10 +24,10 @@ import {
   PagingRequestDto,
 } from '../../../../common/dto/pagination-request.dto';
 import { PaginationResponseDto } from '../../../../common/dto/pagination-response.dto';
-
 @Injectable()
 export class PaymentService {
   constructor(
+    private dataSource: DataSource, // Inject DataSource
     private cartService: CartService,
     @InjectRepository(PaymentTransaction)
     private paymentTransactionRepository: Repository<PaymentTransaction>,
@@ -41,6 +43,16 @@ export class PaymentService {
     user: User,
   ): Promise<{ transaction: PaymentTransaction; details: PaymentDetail[] }> {
     try {
+      const exist = await this.courseSubscriptionRepository.find({
+        where: {
+          courseId: In(payload.courseInfo.map((info) => info.id)),
+          userId: user.id,
+          status: CourseSubType.ACTIVE,
+        },
+      });
+      if (exist?.length) {
+        throw new BadRequestException('User already enrolled in a course');
+      }
       const value = this.paymentTransactionRepository.create({
         userId: user.id,
         method: payload.method,
@@ -69,12 +81,12 @@ export class PaymentService {
 
       if (payload.status === PaymentStatus.SUCCESS) {
         await Promise.all(
-          payload.courseInfo.map(async (detailData) => {
+          details.map(async (detailData) => {
             return this.createCourseSubscription(
               {
-                courseId: detailData.id,
-                expirationDate: detailData?.expirationDate,
-                transactionId: transaction.id,
+                courseId: detailData.courseId || detailData.course?.id,
+                expirationDate: null,
+                transactionId: detailData.id,
               },
               user.id,
             );
@@ -195,7 +207,7 @@ export class PaymentService {
     const query = new PagingRequestDto<CourseSubscription>(pagAble, [
       'course.name',
     ]).mapOrmQuery({
-      relations: ['course', 'course.topics'],
+      relations: ['course', 'course.owner'],
       where: {
         userId: user.id,
         status: In([CourseSubType.ACTIVE]),
@@ -212,73 +224,72 @@ export class PaymentService {
     );
   }
 
-  // async cancelCourseSubscription(
-  //   subscriptionId: number,
-  // ): Promise<CourseSubscription> {
-  //   await this.courseSubscriptionRepository.update(subscriptionId, {
-  //     status: CourseSubType.CANCELLED,
-  //   });
-  //   return this.courseSubscriptionRepository.findOneBy({ id: subscriptionId });
-  // }
+  async findSubscriptionsByOwner(
+    user: User,
+    pagAble: PagingRequestBase,
+    payload: ChartCoursePayload,
+  ) {
+    const where = {
+      course: {
+        ownerId: user.id,
+      },
+      createdAt: (payload?.startDate && payload?.endDate
+        ? Between(payload.startDate, payload.endDate)
+        : undefined) as any,
+    };
+    const query = new PagingRequestDto<CourseSubscription>(pagAble, [
+      'course.name',
+    ]).mapOrmQuery({
+      relations: ['course', 'user', 'payment'],
+      where,
+    });
+    const [courses, total] =
+      await this.courseSubscriptionRepository.findAndCount(query);
 
-  // async expireCourseSubscriptions(): Promise<void> {
-  //   const subscriptions = await this.courseSubscriptionRepository.find({
-  //     where: {
-  //       expirationDate: LessThanOrEqual(new Date()),
-  //       status: CourseSubType.ACTIVE,
-  //     },
-  //   });
+    return new PaginationResponseDto<CourseSubscription>(
+      courses,
+      total,
+      pagAble.page,
+      pagAble.size,
+    );
+  }
 
-  //   await Promise.all(
-  //     subscriptions.map(async (subscription) => {
-  //       await this.courseSubscriptionRepository.update(subscription.id, {
-  //         status: CourseSubType.EXPIRED,
-  //       });
-  //     }),
-  //   );
-  // }
+  async getSubscriptionGroupByDay(
+    user: User,
+    payload: ChartCoursePayload,
+  ): Promise<ChartCourseResponse> {
+    const { startDate, endDate } = payload;
+    const mana = this.dataSource.manager;
+    const rawData = await mana.query(
+      `SELECT
+        DATE(cs.created_at) as date,
+        SUM(pd.amount) as sales,
+        COUNT(cs.id) as s_count,
+        COUNT(DISTINCT c.id) as c_count
+      FROM
+        course_subscription cs
+      JOIN
+        payment_details pd ON cs.payment_id = pd.id
+      JOIN
+        courses c ON cs.course_id = c.id
+      WHERE
+        cs.created_at BETWEEN $1 AND $2
+            AND c.owner_id = $3
+      GROUP BY
+        DATE(cs.created_at)
+      ORDER BY
+      date ASC;`,
+      [startDate, endDate, user.id],
+    );
 
-  // Refund method
-  // async processRefund(
-  //   transactionId: number,
-  //   refundAmount: number,
-  // ): Promise<{
-  //   refundTransaction: PaymentTransaction;
-  //   updatedDetails: PaymentDetail[];
-  // }> {
-  //   const transaction = await this.paymentTransactionRepository.findOneBy({
-  //     id: transactionId,
-  //   });
-  //   if (!transaction) {
-  //     throw new Error(`Transaction with id ${transactionId} not found`);
-  //   }
-
-  //   // Tạo giao dịch hoàn tiền
-  //   const refundTransaction = await this.paymentTransactionRepository.save({
-  //     userId: transaction.userId,
-  //     amount: refundAmount,
-  //     paymentDate: new Date(),
-  //     method: transaction.method,
-  //     status: PaymentStatus.SUCCESS, // Hoặc một trạng thái phù hợp
-  //     transactionId: `REFUND-${transaction.transactionUId}`, // Tạo ID giao dịch hoàn tiền
-  //     currency: transaction.currency,
-  //   });
-
-  //   // Cập nhật chi tiết thanh toán
-  //   const updatedDetails = await Promise.all(
-  //     this.paymentDetailRepository
-  //       .find({ where: { transactionId } })
-  //       .map(async (detail) => {
-  //         // Giảm số tiền thanh toán
-  //         detail.amount -=
-  //           refundAmount /
-  //           (await this.paymentDetailRepository.count({
-  //             where: { transactionId },
-  //           }));
-  //         return this.paymentDetailRepository.save(detail);
-  //       }),
-  //   );
-
-  //   return { refundTransaction, updatedDetails };
-  // }
+    return {
+      data: rawData.map((item) => ({
+        date: item.date,
+        value: parseFloat(item.sales),
+        currency: Currency.VND,
+        subscriptionCount: +item.s_count,
+        courseCount: +item.c_count,
+      })),
+    };
+  }
 }

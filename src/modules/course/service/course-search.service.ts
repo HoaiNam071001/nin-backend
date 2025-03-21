@@ -159,7 +159,7 @@ export class CourseSearchService {
           userId,
         },
       },
-      relations: ['instructors', 'instructors.user'],
+      relations: ['instructors', 'instructors.user', 'owner'],
     });
     const [data, total] = await this.courseRepository.findAndCount(query);
 

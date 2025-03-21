@@ -22,17 +22,21 @@ import { FileModule } from '../file/file.module';
 import { PaymentModule } from './_modules/payment/payment.module';
 import { CartModule } from './_modules/cart/cart.module';
 import { CourseCommentModule } from './_modules/comment/comment.module';
+import { RecentSearch } from './entity/recent-searches.entity';
+import { RecentSearchesService } from './service/recent-searches.service';
+import { RecentSearchesController } from './controller/recent-searches.controller';
 
 const SERVICES = [
   CourseService,
   CourseUpdateService,
   CourseSearchService,
   InstructorService,
+  RecentSearchesService,
 ];
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Course, Instructor, Discount]),
+    TypeOrmModule.forFeature([Course, Instructor, Discount, RecentSearch]),
     UserModule,
     LevelModule,
     CategoryModule,
@@ -49,7 +53,11 @@ const SERVICES = [
     CourseCommentModule,
   ],
   providers: [...SERVICES],
-  controllers: [CourseController, CourseSearchController],
+  controllers: [
+    CourseController,
+    CourseSearchController,
+    RecentSearchesController,
+  ],
   exports: [...SERVICES],
 })
 export class CourseModule {

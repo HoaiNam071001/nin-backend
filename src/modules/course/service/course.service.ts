@@ -92,22 +92,6 @@ export class CourseService {
       pagAble.page,
       pagAble.size,
     );
-    // const query = new PagingRequestDto<Course>(pagAble, ['name']).mapOrmQuery({
-    //   relations: ['owner', 'topics'],
-    //   where: {
-    //     subscriptions: {
-    //       userId: user.id,
-    //     },
-    //   },
-    // });
-    // const [courses, total] = await this.courseRepository.findAndCount(query);
-
-    // return new PaginationResponseDto<Course>(
-    //   courses.map((e) => plainToClass(Course, e)),
-    //   total,
-    //   pagAble.page,
-    //   pagAble.size,
-    // );
   }
 
   async findOne(id: number): Promise<Course> {

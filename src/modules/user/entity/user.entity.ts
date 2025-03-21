@@ -21,6 +21,7 @@ import {
 import { CartItem } from '../../course/_modules/cart/cart.entity';
 import { Instructor } from '../../course/entity/instructor.entity';
 import { CourseComment } from '../../course/_modules/comment/entity/comment.entity';
+import { RecentSearch } from '../../course/entity/recent-searches.entity';
 
 @Entity('users') // Tên bảng trong cơ sở dữ liệu
 export class User {
@@ -98,4 +99,7 @@ export class User {
 
   @OneToMany(() => CourseComment, (sub) => sub.user)
   courseComments: CourseComment[];
+
+  @OneToMany(() => RecentSearch, (sub) => sub.user)
+  recentSearches: RecentSearch[];
 }
