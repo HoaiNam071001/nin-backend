@@ -126,7 +126,9 @@ export class PaymentController {
     @Query() paging: PagingRequestBase,
     @Query() payload: ChartCoursePayload,
   ) {
-    return this.paymentService.findSubscriptionsByOwner(user, paging, payload);
+    return this.paymentService.findSubscriptionsByOwner(paging, payload, [
+      user.id,
+    ]);
   }
 
   @Get('subscriptions/owner/chart')
@@ -134,7 +136,7 @@ export class PaymentController {
     @Req() { user }: AuthRequest,
     @Query() payload: ChartCoursePayload,
   ) {
-    return this.paymentService.getSubscriptionGroupByDay(user, payload);
+    return this.paymentService.getSubscriptionGroupByDay(payload, [user.id]);
   }
 
   @Get('subscriptions/:courseId')

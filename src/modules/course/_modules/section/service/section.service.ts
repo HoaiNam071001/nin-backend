@@ -62,7 +62,6 @@ export class SectionService {
       const savedSection = await this.sectionRepository.save(section);
       return plainToClass(SectionDto, savedSection);
     } catch (err) {
-      console.log(err);
       throw new InternalServerErrorException(err);
     }
   }
@@ -174,7 +173,6 @@ export class SectionService {
       });
       return savedFile;
     } catch (err) {
-      console.log(err);
       throw new InternalServerErrorException(err);
     }
   }

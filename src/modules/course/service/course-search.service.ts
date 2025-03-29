@@ -1,32 +1,32 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Course } from '../entity/course.entity';
+import { plainToClass } from 'class-transformer';
 import { In, LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
 import {
+  DynamicFilter,
   PagingRequestBase,
   PagingRequestDto,
 } from '../../../common/dto/pagination-request.dto';
-import { CourseDto, FullCourseDto } from '../dto/course.dto';
 import { PaginationResponseDto } from '../../../common/dto/pagination-response.dto';
-import { plainToClass } from 'class-transformer';
-import { CourseSearchFilterDto } from '../dto/course-search.dto';
+import { CustomNotFoundException } from '../../../common/exceptions/http/custom-not-found.exception';
+import { SearchService } from '../../ai/services/search.service';
+import { FileService } from '../../file/file.service';
+import { ShortUser } from '../../user/dto/user.dto';
 import { CategoryDto } from '../_modules/category/dto/category.dto';
 import { LevelDto } from '../_modules/level/dto/level.dto';
-import { SearchService } from '../../ai/services/search.service';
-import { CustomNotFoundException } from '../../../common/exceptions/http/custom-not-found.exception';
-import { InstructorDto } from '../dto/instructor.dto';
-import { ShortUser } from '../../user/dto/user.dto';
-import { Discount } from '../entity/discount.entity';
 import { SectionService } from '../_modules/section/service/section.service';
-import { FileService } from '../../file/file.service';
+import { CourseSearchFilterDto } from '../dto/course-search.dto';
+import { CourseDto, FullCourseDto } from '../dto/course.dto';
 import { DiscountDto } from '../dto/discount.dto';
-import { PaymentService } from '../_modules/payment/payment.service';
+import { InstructorDto } from '../dto/instructor.dto';
+import { Course } from '../entity/course.entity';
+import { Discount } from '../entity/discount.entity';
+import { CourseStatus } from '../model/course.model';
 
 @Injectable()
 export class CourseSearchService {
   constructor(
     private fileService: FileService,
-    private paymentService: PaymentService,
     private sectionService: SectionService,
     private searchService: SearchService,
     @InjectRepository(Course)
@@ -36,44 +36,26 @@ export class CourseSearchService {
     private readonly discountRepository: Repository<Discount>,
   ) {}
 
-  private buildFilterQuery(filtersDto: CourseSearchFilterDto): any {
-    const where: any = {};
-
-    if (filtersDto.status) {
-      where.status =
-        filtersDto.status instanceof Array
-          ? In(filtersDto.status)
-          : filtersDto.status;
-    }
-
-    if (filtersDto.categoryIds) {
-      where.categoryId =
-        filtersDto.categoryIds instanceof Array
-          ? In(filtersDto.categoryIds)
-          : filtersDto.categoryIds;
-    }
-
-    if (filtersDto.levelIds) {
-      where.levelId =
-        filtersDto.levelIds instanceof Array
-          ? In(filtersDto.levelIds)
-          : filtersDto.levelIds;
-    }
-
-    return where;
-  }
-
   async find(pagable: PagingRequestBase, filtersDto: CourseSearchFilterDto) {
-    const where = this.buildFilterQuery(filtersDto);
+    const request = new PagingRequestDto<Course>(pagable, ['name', 'summary']);
+    const filter: DynamicFilter<Course> = {};
+    if (filtersDto.status) {
+      filter.AND = [{ status: filtersDto.status as CourseStatus }];
+    }
+    if (filtersDto.categoryIds) {
+      filter.OR = [
+        { categoryId: filtersDto.categoryIds as number },
+        { subCategoryId: filtersDto.categoryIds as number },
+      ];
+    }
 
-    const query = new PagingRequestDto<Course>(pagable, [
-      'name',
-      'summary',
-    ]).mapOrmQuery({
-      where,
-    });
-    query.relations = ['owner', 'category', 'subCategory', 'level', 'topics'];
-    const [data, total] = await this.courseRepository.findAndCount(query);
+    const qb = request.buildQueryBuilder(
+      this.courseRepository,
+      'course',
+      filter,
+      ['owner', 'category', 'subCategory', 'level', 'topics'],
+    );
+    const [data, total] = await qb.getManyAndCount();
 
     return new PaginationResponseDto<CourseDto>(
       data.map((e) => ({

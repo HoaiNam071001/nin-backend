@@ -22,6 +22,7 @@ import { CartItem } from '../../course/_modules/cart/cart.entity';
 import { Instructor } from '../../course/entity/instructor.entity';
 import { CourseComment } from '../../course/_modules/comment/entity/comment.entity';
 import { RecentSearch } from '../../course/entity/recent-searches.entity';
+import { CourseRating } from '../../course/_modules/rating/course-rating.entity';
 
 @Entity('users') // Tên bảng trong cơ sở dữ liệu
 export class User {
@@ -51,6 +52,9 @@ export class User {
 
   @Column({ type: 'varchar', length: 255, nullable: true }) // Tiểu sử
   bio?: string;
+
+  @Column({ type: 'boolean', default: true })
+  active?: boolean;
 
   @Exclude()
   @Column({ type: 'varchar', length: 255, nullable: false }) // Mật khẩu
@@ -102,4 +106,7 @@ export class User {
 
   @OneToMany(() => RecentSearch, (sub) => sub.user)
   recentSearches: RecentSearch[];
+
+  @OneToMany(() => CourseRating, (sub) => sub.user)
+  courseRatings: CourseRating[];
 }

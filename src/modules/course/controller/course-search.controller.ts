@@ -1,15 +1,19 @@
-import { Controller, Get, Param, Query, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import {
   PagingRequestBase,
   PagingRequestDto,
 } from '../../../common/dto/pagination-request.dto';
+import { CourseSearchFilterDto } from '../dto/course-search.dto';
 import { Course } from '../entity/course.entity';
 import { CourseSearchService } from '../service/course-search.service';
-import { CourseSearchFilterDto } from '../dto/course-search.dto';
+import { CourseService } from '../service/course.service';
 
 @Controller('course-search')
 export class CourseSearchController {
-  constructor(private readonly courseSearchService: CourseSearchService) {}
+  constructor(
+    private readonly courseSearchService: CourseSearchService,
+    private readonly courseService: CourseService,
+  ) {}
 
   // Lấy tất cả các khóa học
   @Get()
@@ -36,5 +40,10 @@ export class CourseSearchController {
     @Query() paging: PagingRequestBase,
   ) {
     return this.courseSearchService.findByInstructor(id, paging);
+  }
+
+  @Get('owner/:id')
+  async getByUser(@Param('id') id: number, @Query() paging: PagingRequestBase) {
+    return this.courseService.findByOwner(id, paging);
   }
 }

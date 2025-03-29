@@ -1,27 +1,31 @@
 import {
+  BadRequestException,
   Injectable,
   UnauthorizedException,
-  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { plainToClass } from 'class-transformer';
 import { QueryFailedError, Repository } from 'typeorm';
-import { Course } from '../entity/course.entity';
+import { Role } from '../../../common/enums/roles.enum';
+import { DuplicateEntryException } from '../../../common/exceptions/database/duplicate-entry.exception';
+import { CustomNotFoundException } from '../../../common/exceptions/http/custom-not-found.exception';
+import { generateSlug } from '../../../common/utils';
+import { User } from '../../user/entity/user.entity';
+import { NotificationType } from '../../user/modules/notifications/notification.dto';
+import { NotificationsService } from '../../user/modules/notifications/notifications.service';
+import { CategoryService } from '../_modules/category/service/category.service';
+import { LevelService } from '../_modules/level/service/level.service';
+import { TopicService } from '../_modules/topic/service/topic.service';
 import {
   CourseDto,
   CoursePayloadDto,
   CourseStatusPayloadDto,
 } from '../dto/course.dto';
-import { CustomNotFoundException } from '../../../common/exceptions/http/custom-not-found.exception';
-import { DuplicateEntryException } from '../../../common/exceptions/database/duplicate-entry.exception';
-import { User } from '../../user/entity/user.entity';
-import { plainToClass } from 'class-transformer';
-import { generateSlug } from '../../../common/utils';
-import { CourseService } from './course.service';
-import { CategoryService } from '../_modules/category/service/category.service';
-import { LevelService } from '../_modules/level/service/level.service';
-import { TopicService } from '../_modules/topic/service/topic.service';
 import { DiscountDto, DiscountPayloadDto } from '../dto/discount.dto';
+import { Course } from '../entity/course.entity';
 import { Discount } from '../entity/discount.entity';
+import { CourseStatus } from '../model/course.model';
+import { CourseService } from './course.service';
 
 @Injectable()
 export class CourseUpdateService {
@@ -30,6 +34,7 @@ export class CourseUpdateService {
     private readonly levelService: LevelService,
     private readonly topicService: TopicService,
     private readonly courseService: CourseService,
+    private readonly notificationsService: NotificationsService,
     @InjectRepository(Course)
     private readonly courseRepository: Repository<Course>,
     @InjectRepository(Discount) // Inject Discount repository
@@ -142,11 +147,40 @@ export class CourseUpdateService {
     if (!course) {
       throw new CustomNotFoundException('Course not found');
     }
+    const { status, content } = payloadDto;
 
-    course.status = payloadDto.status;
+    if (
+      [CourseStatus.READY, CourseStatus.REJECT].includes(status) &&
+      !user.roles.some((e) => e.roleName === Role.EDUCATION_MANAGER)
+    ) {
+      throw new UnauthorizedException(
+        'You do not have permission to update this course status',
+      );
+    }
+
+    course.status = status;
 
     try {
       await this.courseRepository.save(course);
+
+      if (
+        user.id !== course.ownerId &&
+        [CourseStatus.READY, CourseStatus.REJECT].includes(status)
+      ) {
+        const mapper = {
+          [CourseStatus.REJECT]: NotificationType.COURSE_REJECTED,
+          [CourseStatus.READY]: NotificationType.COURSE_APPROVED,
+        };
+        this.notificationsService.create({
+          type: mapper[status],
+          userId: course.ownerId,
+          courseId: course.id,
+          data: {
+            content: content,
+          },
+        });
+      }
+
       return await this.courseService.getById(id);
     } catch (error) {
       if (

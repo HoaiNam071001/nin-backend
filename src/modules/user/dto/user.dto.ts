@@ -99,10 +99,4 @@ export class UserDto {
   roles?: UserRole[];
 }
 
-export class SearchUserPayload {
-  static buildFilterQuery(filtersDto: any): any {
-    console.log(filtersDto);
-    const where: any = {};
-    return where;
-  }
-}
+export class SearchUserPayload {}

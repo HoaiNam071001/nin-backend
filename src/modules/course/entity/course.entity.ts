@@ -1,30 +1,32 @@
+import { Exclude } from 'class-transformer';
 import {
-  Entity,
   Column,
-  PrimaryGeneratedColumn,
-  ManyToOne,
-  JoinColumn,
-  OneToMany,
   CreateDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { User } from '../../user/entity/user.entity';
-import { Category } from '../_modules/category/entity/category.entity';
-import { Exclude } from 'class-transformer';
-import { Level } from '../_modules/level/entity/level.entity';
-import { CourseTopic } from '../_modules/topic/entity/topic.entity';
 import { NFile } from '../../file/entity/file.entity';
-import { Section } from '../_modules/section/entity/section.entity';
-import { CourseStatus } from '../model/course.model';
-import { Instructor } from './instructor.entity';
-import { Target } from '../_modules/target/entity/target.entity';
-import { Discount } from './discount.entity';
+import { User } from '../../user/entity/user.entity';
+import { NotificationModel } from '../../user/modules/notifications/notification.entity';
+import { CartItem } from '../_modules/cart/cart.entity';
+import { Category } from '../_modules/category/entity/category.entity';
+import { CourseComment } from '../_modules/comment/entity/comment.entity';
+import { Level } from '../_modules/level/entity/level.entity';
 import {
   CourseSubscription,
   PaymentDetail,
 } from '../_modules/payment/payment.entity';
-import { CartItem } from '../_modules/cart/cart.entity';
-import { CourseComment } from '../_modules/comment/entity/comment.entity';
+import { CourseRating } from '../_modules/rating/course-rating.entity';
+import { Section } from '../_modules/section/entity/section.entity';
+import { Target } from '../_modules/target/entity/target.entity';
+import { CourseTopic } from '../_modules/topic/entity/topic.entity';
+import { CourseStatus } from '../model/course.model';
+import { Discount } from './discount.entity';
+import { Instructor } from './instructor.entity';
 @Entity('courses')
 export class Course {
   @PrimaryGeneratedColumn()
@@ -60,14 +62,17 @@ export class Course {
   @Column({ name: 'category_id', type: 'int', nullable: true })
   categoryId?: number;
 
-  // @Column({ name: 'sub_category_id', type: 'int', nullable: true })
-  // subCategoryId?: number;
+  @Column({ name: 'sub_category_id', type: 'int', nullable: true })
+  subCategoryId?: number;
 
   @Column({ name: 'level_id', type: 'int', nullable: true })
   levelId?: number;
 
   @Column({ type: 'varchar', enum: CourseStatus, default: CourseStatus.DRAFT })
   status: CourseStatus;
+
+  @Column({ type: 'float', default: 0 })
+  rating: number;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
@@ -131,4 +136,10 @@ export class Course {
 
   @OneToMany(() => CourseComment, (sub) => sub.course)
   courseComments: CourseComment[];
+
+  @OneToMany(() => CourseRating, (sub) => sub.course)
+  courseRatings: CourseRating[];
+
+  @OneToMany(() => NotificationModel, (sub) => sub.course)
+  notifications: NotificationModel[];
 }

@@ -1,14 +1,15 @@
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { UserModule } from './modules/user/user.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { CourseModule } from './modules/course/course.module';
-import { AuthModule } from './modules/auth/auth.module';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 import { databaseConfig } from './config/database.config';
+import { AuthModule } from './modules/auth/auth.module';
+import { CourseModule } from './modules/course/course.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { DataModule } from './modules/data/data.module';
 import { FileModule } from './modules/file/file.module';
+import { UserModule } from './modules/user/user.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { FileModule } from './modules/file/file.module';
     CourseModule,
     AuthModule,
     DataModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [AppService],

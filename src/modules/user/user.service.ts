@@ -24,10 +24,10 @@ export class UserService {
   ) {}
 
   // Tạo người dùng mới
-  async create(createUserDto: SignupDto): Promise<User> {
-    const user = this.usersRepository.create(createUserDto); // Tạo instance User
-    const savedUser = await this.usersRepository.save(user); // Lưu vào database
-    await this.createUserRole(savedUser.id, createUserDto.role);
+  async create(createUserDto: SignupDto, roles?: Role[]): Promise<User> {
+    const user = this.usersRepository.create(createUserDto);
+    const savedUser = await this.usersRepository.save(user);
+    await this.createUserRole(savedUser.id, roles);
     return await this.findById(savedUser.id);
   }
 
@@ -50,8 +50,8 @@ export class UserService {
 
   // Cập nhật thông tin người dùng
   async update(id: number, updateUserDto: UpdateUserDto) {
-    await this.usersRepository.update(id, updateUserDto); // Cập nhật thông tin người dùng
-    return this.findById(id); // Trả về người dùng đã cập nhật
+    await this.usersRepository.update(id, updateUserDto);
+    return this.findById(id);
   }
 
   // Xóa người dùng
@@ -68,13 +68,27 @@ export class UserService {
   }
 
   // Role
-  async createUserRole(id: number, role: Role): Promise<UserRole> {
-    const userRole = this.userRoleRepository.create({
-      userId: id,
-      roleName: role || Role.STUDENT,
-    });
-    const roleRes = await this.userRoleRepository.save(userRole);
-    return roleRes;
+  async createUserRole(id: number, roles?: Role[]): Promise<UserRole> {
+    if (!roles?.length) {
+      const userRole = this.userRoleRepository.create({
+        userId: id,
+        roleName: Role.STUDENT,
+      });
+      const roleRes = await this.userRoleRepository.save(userRole);
+      return roleRes;
+    }
+
+    const newUserRoles = roles.map((role) =>
+      this.userRoleRepository.create({
+        userId: id,
+        roleName: role,
+      }),
+    );
+
+    // Lưu các roles mới và trả về
+    if (newUserRoles.length > 0) {
+      await this.userRoleRepository.save(newUserRoles);
+    }
   }
 
   async addRoleToUser(userId: number, role: Role) {
@@ -83,7 +97,7 @@ export class UserService {
       return user;
     }
 
-    await this.createUserRole(userId, role);
+    await this.createUserRole(userId, [role]);
     const _user = await this.findById(userId);
     return _user;
   }

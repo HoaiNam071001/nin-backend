@@ -1,29 +1,29 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
+  Controller,
+  Delete,
+  Get,
   Param,
-  UseGuards,
-  Req,
+  ParseIntPipe,
+  Post,
   Put,
   Query,
-  Delete,
-  ParseIntPipe,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
-import { CourseService } from '../service/course.service';
+import { PagingRequestDto } from '../../../common/dto/pagination-request.dto';
+import { AuthRequest } from '../../../common/interfaces';
+import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 import {
   CourseDto,
   CoursePayloadDto,
   CourseStatusPayloadDto,
 } from '../dto/course.dto';
-import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
-import { AuthRequest } from '../../../common/interfaces';
-import { CourseUpdateService } from '../service/course-update.service';
-import { PagingRequestDto } from '../../../common/dto/pagination-request.dto';
-import { InstructorService } from '../service/instructor.service';
-import { InstructorPayloadDto } from '../dto/instructor.dto';
 import { DiscountPayloadDto } from '../dto/discount.dto';
+import { InstructorPayloadDto } from '../dto/instructor.dto';
+import { CourseUpdateService } from '../service/course-update.service';
+import { CourseService } from '../service/course.service';
+import { InstructorService } from '../service/instructor.service';
 
 @UseGuards(JwtAuthGuard)
 @Controller('course')
@@ -40,7 +40,7 @@ export class CourseController {
     @Req() { user }: AuthRequest,
     @Query() paging: PagingRequestDto<CourseDto>,
   ) {
-    return this.courseService.findByOwner(user, paging);
+    return this.courseService.findByOwner(user.id, paging);
   }
 
   @Get('registered')

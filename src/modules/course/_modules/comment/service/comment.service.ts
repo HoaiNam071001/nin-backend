@@ -1,19 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { plainToClass } from 'class-transformer';
 import { IsNull, Repository } from 'typeorm';
-import { CourseComment } from '../entity/comment.entity';
-import {
-  CommentResponseDto,
-  CreateCommentDto,
-  GetCommentDto,
-} from '../dto/comment.dto';
 import {
   PagingRequestBase,
   PagingRequestDto,
 } from '../../../../../common/dto/pagination-request.dto';
 import { PaginationResponseDto } from '../../../../../common/dto/pagination-response.dto';
-import { plainToClass } from 'class-transformer';
 import { ShortUser } from '../../../../user/dto/user.dto';
+import {
+  CommentResponseDto,
+  CreateCommentDto,
+  GetCommentDto,
+} from '../dto/comment.dto';
+import { CourseComment } from '../entity/comment.entity';
 
 @Injectable()
 export class CourseCommentService {
@@ -63,13 +63,11 @@ export class CourseCommentService {
     const [data, total] =
       await this.courseCommentRepository.findAndCount(query);
     let comments = data;
-    if (!payload.parentId) {
-      comments = await Promise.all(
-        comments.map(async (comment) => {
-          return await this.mapCommentToResponse(comment, payload.parentId);
-        }),
-      );
-    }
+    comments = await Promise.all(
+      comments.map(async (comment) => {
+        return await this.mapCommentToResponse(comment);
+      }),
+    );
 
     return new PaginationResponseDto<CommentResponseDto>(
       comments.map((e) => ({
@@ -82,16 +80,11 @@ export class CourseCommentService {
     );
   }
 
-  private async mapCommentToResponse(
-    comment: CourseComment,
-    parentId: number | null,
-  ) {
+  private async mapCommentToResponse(comment: CourseComment) {
     let replyCount = 0;
-    if (!parentId) {
-      replyCount = await this.courseCommentRepository.count({
-        where: { parentComment: { id: comment.id } },
-      });
-    }
+    replyCount = await this.courseCommentRepository.count({
+      where: { parentComment: { id: comment.id } },
+    });
 
     return {
       ...comment,

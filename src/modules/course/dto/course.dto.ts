@@ -76,6 +76,9 @@ export class CourseDto {
 
   @Expose()
   updatedAt: Date;
+
+  @Expose()
+  rating?: number;
 }
 
 export class CoursePayloadDto {
@@ -134,8 +137,9 @@ export class CoursePayloadDto {
 }
 
 export class CourseStatusPayloadDto {
-  @IsString()
   status?: CourseStatus;
+
+  content?: string;
 }
 
 export class FullCourseDto {
@@ -180,6 +184,9 @@ export class FullCourseDto {
 
   @IsOptional()
   currency: string;
+
+  @IsOptional()
+  rating: number;
 
   @IsOptional()
   subCategory: CategoryDto;

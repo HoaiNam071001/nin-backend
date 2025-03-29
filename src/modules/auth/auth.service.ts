@@ -33,6 +33,10 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    if (!user.active) {
+      throw new UnauthorizedException('User is not active');
+    }
+
     // Tạoput và trả về token
     const payload: JwtPayload = { sub: user.id }; // sub thường là ID người dùng
     return {

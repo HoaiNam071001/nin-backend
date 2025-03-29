@@ -1,11 +1,4 @@
-import {
-  IsEmail,
-  IsEnum,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-} from 'class-validator';
-import { Role } from '../../../common/enums/roles.enum';
+import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class SignupDto {
   @IsEmail()
@@ -27,7 +20,4 @@ export class SignupDto {
   @IsNotEmpty()
   @IsString()
   password: string;
-
-  @IsEnum(Role, { each: true })
-  role: Role; // Sử dụng enum Role cho các vai trò
 }

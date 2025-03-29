@@ -10,6 +10,7 @@ export enum CourseStatus {
   READY = 'ready',
   REJECT = 'reject',
   DELETED = 'deleted',
+  PRIVATE = 'private',
 }
 
 export enum CourseAccessType {

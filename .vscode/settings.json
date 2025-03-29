@@ -1,0 +1,17 @@
+{
+  "editor.codeActionsOnSave": {
+    "source.addMissingImports.ts": "always",
+    "source.removeUnusedImports": "always",
+    "source.organizeImports": "always",
+    "source.sortImports": "always"
+  },
+  "editor.formatOnSave": true, // Kích hoạt tự động format khi lưu
+  "editor.defaultFormatter": "esbenp.prettier-vscode", // Sử dụng Prettier làm formatter mặc định (nếu bạn dùng Prettier)
+  "editor.formatOnSaveMode": "file", // Chỉ format toàn bộ file (có thể đổi thành "modifications" nếu chỉ muốn format phần đã chỉnh sửa)
+  "[typescript]": { // Áp dụng format cho file TypeScript
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": { // Áp dụng format cho file JavaScript
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
+}

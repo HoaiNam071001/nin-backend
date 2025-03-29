@@ -1,23 +1,23 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Course } from '../entity/course.entity';
-import { CourseDto } from '../dto/course.dto';
-import { CustomNotFoundException } from '../../../common/exceptions/http/custom-not-found.exception';
-import { User } from '../../user/entity/user.entity';
 import { plainToClass } from 'class-transformer';
+import { Repository } from 'typeorm';
 import {
   PagingRequestBase,
   PagingRequestDto,
 } from '../../../common/dto/pagination-request.dto';
 import { PaginationResponseDto } from '../../../common/dto/pagination-response.dto';
+import { CustomNotFoundException } from '../../../common/exceptions/http/custom-not-found.exception';
 import { ShortUser } from '../../user/dto/user.dto';
+import { User } from '../../user/entity/user.entity';
+import { UserService } from '../../user/user.service';
 import { CategoryDto } from '../_modules/category/dto/category.dto';
 import { LevelDto } from '../_modules/level/dto/level.dto';
-import { UserService } from '../../user/user.service';
-import { TopicService } from '../_modules/topic/service/topic.service';
-import { DiscountDto } from '../dto/discount.dto';
 import { PaymentService } from '../_modules/payment/payment.service';
+import { TopicService } from '../_modules/topic/service/topic.service';
+import { CourseDto } from '../dto/course.dto';
+import { DiscountDto } from '../dto/discount.dto';
+import { Course } from '../entity/course.entity';
 @Injectable()
 export class CourseService {
   constructor(
@@ -64,11 +64,11 @@ export class CourseService {
     return courseDto;
   }
 
-  async findByOwner(user: User, pagable: PagingRequestBase) {
+  async findByOwner(userId: number, pagable: PagingRequestBase) {
     const query = new PagingRequestDto<Course>(pagable, ['name']).mapOrmQuery({
       relations: ['owner', 'topics'],
       where: {
-        ownerId: user.id,
+        ownerId: userId,
       },
     });
     const [courses, total] = await this.courseRepository.findAndCount(query);

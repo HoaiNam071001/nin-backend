@@ -25,6 +25,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (!user) {
       throw new UnauthorizedException(); // Nếu không tìm thấy, ném ra lỗi Unauthorized
     }
+    if (!user.active) {
+      throw new UnauthorizedException('User is not active'); // Nếu người dùng không active, ném ra l��i Unauthorized
+    }
     return plainToClass(User, user); // Trả về thông tin người dùng
   }
 }

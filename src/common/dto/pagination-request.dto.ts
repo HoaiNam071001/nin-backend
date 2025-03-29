@@ -1,5 +1,12 @@
-import { IsOptional, IsInt, IsString, IsPositive } from 'class-validator';
-import { FindManyOptions, FindOptionsWhere, ILike } from 'typeorm';
+import { IsInt, IsOptional, IsPositive, IsString } from 'class-validator';
+import {
+  Brackets,
+  FindManyOptions,
+  FindOptionsWhere,
+  ILike,
+  Repository,
+  SelectQueryBuilder,
+} from 'typeorm';
 
 export const DEFAULT_PAGE_SIZE = 10;
 export const FIRST_PAGE = 0;
@@ -14,6 +21,11 @@ export interface PagingRequestBase {
   size?: number;
   sort?: string[] | string;
   keyword?: string;
+}
+
+export interface DynamicFilter<T> {
+  AND?: FindOptionsWhere<T>[]; // Các điều kiện AND
+  OR?: FindOptionsWhere<T>[]; // Các điều kiện OR
 }
 
 export class PagingRequestDto<T> implements PagingRequestBase {
@@ -66,7 +78,7 @@ export class PagingRequestDto<T> implements PagingRequestBase {
 
   // Hàm ánh xạ truy vấn
   mapOrmQuery(params?: FindManyOptions<T>): FindManyOptions<T> {
-    const skip = (this.page - 1) * this.size; // Tính toán số bản ghi bỏ qua
+    const skip = this.page * this.size; // Tính toán số bản ghi bỏ qua
     const query: FindManyOptions<T> = {
       ...params,
       skip: skip > 0 ? skip : 0,
@@ -118,6 +130,112 @@ export class PagingRequestDto<T> implements PagingRequestBase {
       }
     }
     return query;
+  }
+
+  // Hàm mới: Tạo QueryBuilder từ filter linh hoạt
+  buildQueryBuilder(
+    repository: Repository<T>,
+    entityAlias: string,
+    filter?: DynamicFilter<T>,
+    relations?: string[],
+  ): SelectQueryBuilder<T> {
+    const qb = repository.createQueryBuilder(entityAlias);
+
+    // Thêm các quan hệ nếu có
+    if (relations) {
+      relations.forEach((relation) => {
+        qb.leftJoinAndSelect(`${entityAlias}.${relation}`, relation);
+      });
+    }
+
+    // Xử lý keyword (OR trên searchableFields)
+    if (this.keyword) {
+      qb.andWhere(
+        new Brackets((subQb) => {
+          this.searchableFields.forEach((field, index) => {
+            const paramKey = `keyword_${index}`;
+            const condition = `${entityAlias}.${field} ILIKE :${paramKey}`;
+            if (index === 0) {
+              subQb.where(condition, { [paramKey]: `%${this.keyword}%` });
+            } else {
+              subQb.orWhere(condition, { [paramKey]: `%${this.keyword}%` });
+            }
+          });
+        }),
+      );
+    }
+
+    // Xử lý filter linh hoạt
+    if (filter) {
+      // Xử lý các điều kiện AND
+      if (filter.AND && filter.AND.length > 0) {
+        filter.AND.forEach((condition, index) => {
+          qb.andWhere(
+            new Brackets((subQb) => {
+              Object.entries(condition).forEach(([key, value]) => {
+                const paramKey = `and_${key.toLowerCase()}_${index}`;
+                if (Array.isArray(value)) {
+                  subQb.andWhere(`${entityAlias}.${key} IN (:...${paramKey})`, {
+                    [paramKey]: value,
+                  });
+                } else {
+                  subQb.andWhere(`${entityAlias}.${key} = :${paramKey}`, {
+                    [paramKey]: value,
+                  });
+                }
+              });
+            }),
+          );
+        });
+      }
+
+      // Xử lý các điều kiện OR
+      if (filter.OR && filter.OR.length > 0) {
+        qb.andWhere(
+          new Brackets((subQb) => {
+            filter.OR.forEach((condition, index) => {
+              Object.entries(condition).forEach(([key, value]) => {
+                const paramKey = `or_${key}_${index}`;
+                const conditionStr = Array.isArray(value)
+                  ? `${entityAlias}.${key} IN (:...${paramKey})`
+                  : `${entityAlias}.${key} = :${paramKey}`;
+                if (index === 0 && key === Object.keys(filter.OR[0])[0]) {
+                  subQb.where(conditionStr, { [paramKey]: value });
+                } else {
+                  subQb.orWhere(conditionStr, { [paramKey]: value });
+                }
+              });
+            });
+          }),
+        );
+      }
+    }
+
+    const page = this.page;
+    const size = this.size;
+    qb.skip(page * size).take(size);
+
+    if (this.sort) {
+      if (typeof this.sort === 'string') {
+        const [fieldPath, direction] = (this.sort as string)?.split(':');
+        const directionUpperCase =
+          direction?.toUpperCase() === SortOrder.DESC
+            ? SortOrder.DESC
+            : SortOrder.ASC;
+        qb.orderBy(`${entityAlias}.${fieldPath}`, directionUpperCase);
+      } else {
+        this.sort.forEach((item) => {
+          const [fieldPath, direction] = item.split(':');
+          const directionUpperCase =
+            direction?.toUpperCase() === SortOrder.DESC
+              ? SortOrder.DESC
+              : SortOrder.ASC;
+          qb.addOrderBy(`${entityAlias}.${fieldPath}`, directionUpperCase);
+        });
+      }
+    }
+
+    return qb;
   }
 }
 
