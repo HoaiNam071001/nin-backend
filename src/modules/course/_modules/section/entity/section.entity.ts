@@ -1,21 +1,22 @@
 import {
-  Entity,
-  PrimaryGeneratedColumn,
   Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
   ManyToOne,
   OneToMany,
-  CreateDateColumn,
-  UpdateDateColumn,
-  JoinColumn,
   OneToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
-import { Course } from '../../../entity/course.entity';
-import { Video } from '../../video/entity/video.entity';
-import { VideoDto } from '../../video/dto/video.dto';
-import { Post } from '../../post/entity/post.entity';
-import { PostDto } from '../../post/dto/post.dto';
 import { FileDto } from '../../../../file/dto/file.dto';
 import { NFile } from '../../../../file/entity/file.entity';
+import { User } from '../../../../user/entity/user.entity';
+import { Course } from '../../../entity/course.entity';
+import { PostDto } from '../../post/dto/post.dto';
+import { Post } from '../../post/entity/post.entity';
+import { VideoDto } from '../../video/dto/video.dto';
+import { Video } from '../../video/entity/video.entity';
 import { SectionType } from '../model/section.model';
 
 @Entity('sections')
@@ -74,4 +75,46 @@ export class Section {
 
   @OneToMany(() => NFile, (video) => video.section)
   files: FileDto;
+
+  @OneToMany(() => SectionProgress, (sub) => sub.section)
+  sectionProgresses: SectionProgress[];
+}
+
+@Entity('section_progresses')
+export class SectionProgress {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column({ name: 'user_id', type: 'int', nullable: true })
+  userId?: number;
+
+  @ManyToOne(() => User, (user) => user.sectionProgresses, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'user_id' })
+  user: User;
+
+  @Column({ name: 'section_id', type: 'int', nullable: true })
+  sectionId?: number;
+
+  @ManyToOne(() => Section, (section) => section.sectionProgresses, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'section_id' })
+  section: Section;
+
+  @Column({
+    type: 'boolean',
+    default: false,
+  })
+  completed: boolean;
+
+  @Column({ type: 'integer', default: 0 })
+  progress: number; // Tiến độ (phần trăm)
+
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt: Date;
+
+  @UpdateDateColumn({ name: 'updated_at' })
+  updatedAt: Date;
 }

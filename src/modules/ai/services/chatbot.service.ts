@@ -1,18 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { AIConversation, AIMessage } from '../entity/chatbot.entity';
 import axios from 'axios';
 import { Response } from 'express';
-import { ChatbotRole } from '../model/chatbot.model';
-import { ChatPayloadDto, ConversationDto } from '../dto/chatbot.dto';
-import { User } from '../../user/entity/user.entity';
+import { Repository } from 'typeorm';
 import {
   PagingRequestBase,
   PagingRequestDto,
   SortOrder,
 } from '../../../common/dto/pagination-request.dto';
 import { PaginationResponseDto } from '../../../common/dto/pagination-response.dto';
+import { User } from '../../user/entity/user.entity';
+import { ChatPayloadDto, ConversationDto } from '../dto/chatbot.dto';
+import { AIConversation, AIMessage } from '../entity/chatbot.entity';
+import { ChatbotRole } from '../model/chatbot.model';
 
 @Injectable()
 export class ChatbotService {
@@ -86,21 +86,15 @@ export class ChatbotService {
       const { conversationId, content } = payload;
 
       // Lấy 5 tin nhắn gần đây để tạo ngữ cảnh
-      // const messages = await this.getMessages({
-      //   size: 5,
-      //   sort: `createdAt:${SortOrder.DESC}`,
-      // });
+      const messages = await this.getMessages(conversationId, {
+        size: 3,
+        sort: `createdAt:${SortOrder.DESC}`,
+      });
 
       // Định dạng tin nhắn thành đoạn hội thoại
-      // const chatContext = messages.content
-      //   .reverse() // Đảo ngược để tin nhắn cũ hơn đứng trước
-      //   .map((msg) => `${msg.sender}: ${msg.content}`)
-      //   .join('\n');
-
-      // const history = {
-      //   [ChatbotRole.USER]: content,
-      //   [ChatbotRole.BOT]: "",
-      // }
+      const history = messages.content
+        .reverse() // Đảo ngược để tin nhắn cũ hơn đứng trước
+        .reduce((res, cur) => ({ ...res, [cur.sender]: cur.content }), {});
 
       // Lưu tin nhắn của User vào DB
       const newUserMessage = this.messageRepository.create({
@@ -115,13 +109,13 @@ export class ChatbotService {
       const aiResponse = await axios.post(
         'http://localhost:8000/api/chat',
         {
-          history: 'user: xin chào',
+          history,
           request: content,
         },
         { responseType: 'stream' },
       );
 
-      res.setHeader('Content-Type', 'text/plain');
+      res.setHeader('Content-Type', 'application/json');
 
       let fullResponseText = '';
 

@@ -150,7 +150,7 @@ export class CourseUpdateService {
     const { status, content } = payloadDto;
 
     if (
-      [CourseStatus.READY, CourseStatus.REJECT].includes(status) &&
+      [CourseStatus.REJECT].includes(status) &&
       !user.roles.some((e) => e.roleName === Role.EDUCATION_MANAGER)
     ) {
       throw new UnauthorizedException(

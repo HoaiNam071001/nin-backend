@@ -11,6 +11,10 @@ import { LevelModule } from './_modules/level/level.module';
 import { PaymentModule } from './_modules/payment/payment.module';
 import { PostModule } from './_modules/post/post.module';
 import { CourseRatingModule } from './_modules/rating/course-rating.module';
+import {
+  Section,
+  SectionProgress,
+} from './_modules/section/entity/section.entity';
 import { SectionModule } from './_modules/section/section.module';
 import { TargetModule } from './_modules/target/target.module';
 import { TopicModule } from './_modules/topic/topic.module';
@@ -18,10 +22,11 @@ import { VideoModule } from './_modules/video/video.module';
 import { CourseSearchController } from './controller/course-search.controller';
 import { CourseController } from './controller/course.controller';
 import { RecentSearchesController } from './controller/recent-searches.controller';
-import { Course } from './entity/course.entity';
+import { Course, CourseProgress } from './entity/course.entity';
 import { Discount } from './entity/discount.entity';
 import { Instructor } from './entity/instructor.entity';
 import { RecentSearch } from './entity/recent-searches.entity';
+import { CourseProgressService } from './service/course-progress.service';
 import { CourseSearchService } from './service/course-search.service';
 import { CourseUpdateService } from './service/course-update.service';
 import { CourseService } from './service/course.service';
@@ -34,11 +39,20 @@ const SERVICES = [
   CourseSearchService,
   InstructorService,
   RecentSearchesService,
+  CourseProgressService,
 ];
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Course, Instructor, Discount, RecentSearch]),
+    TypeOrmModule.forFeature([
+      Course,
+      Instructor,
+      Discount,
+      RecentSearch,
+      CourseProgress,
+      Section,
+      SectionProgress,
+    ]),
     UserModule,
     LevelModule,
     CategoryModule,

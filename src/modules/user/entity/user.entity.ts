@@ -1,28 +1,29 @@
+import * as bcrypt from 'bcrypt';
+import { Exclude } from 'class-transformer';
 import {
-  Entity,
-  PrimaryGeneratedColumn,
+  BeforeInsert,
   Column,
   CreateDateColumn,
-  UpdateDateColumn,
+  Entity,
   OneToMany,
-  BeforeInsert,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
-import * as bcrypt from 'bcrypt';
-import { Course } from '../../course/entity/course.entity';
-import { UserRole } from './user-role.entity';
-import { Exclude } from 'class-transformer';
-import { NFile } from '../../file/entity/file.entity';
-import { Topic } from '../../course/_modules/topic/entity/topic.entity';
 import { AIConversation, AIMessage } from '../../ai/entity/chatbot.entity';
+import { CartItem } from '../../course/_modules/cart/cart.entity';
+import { CourseComment } from '../../course/_modules/comment/entity/comment.entity';
 import {
   CourseSubscription,
   PaymentTransaction,
 } from '../../course/_modules/payment/payment.entity';
-import { CartItem } from '../../course/_modules/cart/cart.entity';
-import { Instructor } from '../../course/entity/instructor.entity';
-import { CourseComment } from '../../course/_modules/comment/entity/comment.entity';
-import { RecentSearch } from '../../course/entity/recent-searches.entity';
 import { CourseRating } from '../../course/_modules/rating/course-rating.entity';
+import { SectionProgress } from '../../course/_modules/section/entity/section.entity';
+import { Topic } from '../../course/_modules/topic/entity/topic.entity';
+import { Course, CourseProgress } from '../../course/entity/course.entity';
+import { Instructor } from '../../course/entity/instructor.entity';
+import { RecentSearch } from '../../course/entity/recent-searches.entity';
+import { NFile } from '../../file/entity/file.entity';
+import { UserRole } from './user-role.entity';
 
 @Entity('users') // Tên bảng trong cơ sở dữ liệu
 export class User {
@@ -109,4 +110,10 @@ export class User {
 
   @OneToMany(() => CourseRating, (sub) => sub.user)
   courseRatings: CourseRating[];
+
+  @OneToMany(() => SectionProgress, (sub) => sub.user)
+  sectionProgresses: SectionProgress[];
+
+  @OneToMany(() => CourseProgress, (sub) => sub.user)
+  courseProgresses: CourseProgress[];
 }

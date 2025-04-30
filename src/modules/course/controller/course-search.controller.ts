@@ -46,4 +46,22 @@ export class CourseSearchController {
   async getByUser(@Param('id') id: number, @Query() paging: PagingRequestBase) {
     return this.courseService.findByOwner(id, paging);
   }
+
+  @Get('public-owner/:id')
+  async getPublicByUser(
+    @Param('id') id: number,
+    @Query() paging: PagingRequestBase,
+  ) {
+    return this.courseService.findPublicByOwner(id, paging);
+  }
+
+  @Get('top-ratings')
+  async getTopRatings() {
+    return this.courseSearchService.getTopRatings();
+  }
+
+  @Get('new-publish-course')
+  async getNewPublishCourse() {
+    return this.courseSearchService.getNewPublishCourse();
+  }
 }

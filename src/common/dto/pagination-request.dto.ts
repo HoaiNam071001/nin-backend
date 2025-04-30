@@ -136,8 +136,8 @@ export class PagingRequestDto<T> implements PagingRequestBase {
   buildQueryBuilder(
     repository: Repository<T>,
     entityAlias: string,
-    filter?: DynamicFilter<T>,
     relations?: string[],
+    filter?: DynamicFilter<T>,
   ): SelectQueryBuilder<T> {
     const qb = repository.createQueryBuilder(entityAlias);
 

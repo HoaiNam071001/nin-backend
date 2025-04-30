@@ -5,20 +5,20 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { plainToClass } from 'class-transformer';
 import { IsNull, Not, Repository } from 'typeorm';
-import { Section } from '../entity/section.entity';
+import { SystemFileType } from '../../../../data/models';
+import { FileDto } from '../../../../file/dto/file.dto';
+import { FileService } from '../../../../file/file.service';
+import { User } from '../../../../user/entity/user.entity';
+import { CourseService } from '../../../service/course.service';
 import {
   CreateSectionDto,
   SectionContentDto,
   SectionDto,
   UpdateSectionDto,
 } from '../dto/section.dto';
-import { User } from '../../../../user/entity/user.entity';
-import { CourseService } from '../../../service/course.service';
-import { plainToClass } from 'class-transformer';
-import { SystemFileType } from '../../../../data/models';
-import { FileService } from '../../../../file/file.service';
-import { FileDto } from '../../../../file/dto/file.dto';
+import { Section } from '../entity/section.entity';
 
 @Injectable()
 export class SectionService {
@@ -69,6 +69,7 @@ export class SectionService {
   async update(
     id: number,
     updateSectionDto: UpdateSectionDto,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     user: User,
   ): Promise<SectionDto> {
     const section = await this.sectionRepository.findOne({ where: { id } });

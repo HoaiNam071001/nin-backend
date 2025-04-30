@@ -1,18 +1,19 @@
 import { Module } from '@nestjs/common';
 
 import { ConfigModule } from '@nestjs/config';
-import { DashboardController } from './dashboard.controller';
-import { DashboardService } from './dashboard.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { PaymentModule } from '../course/_modules/payment/payment.module';
+import { Course } from '../course/entity/course.entity';
+import { UserRole } from '../user/entity/user-role.entity';
 import { User } from '../user/entity/user.entity';
 import { UserModule } from '../user/user.module';
-import { UserRole } from '../user/entity/user-role.entity';
-import { PaymentModule } from '../course/_modules/payment/payment.module';
+import { DashboardController } from './dashboard.controller';
+import { DashboardService } from './dashboard.service';
 
 @Module({
   imports: [
     ConfigModule,
-    TypeOrmModule.forFeature([User, UserRole]),
+    TypeOrmModule.forFeature([User, UserRole, Course]),
     UserModule,
     PaymentModule,
   ],

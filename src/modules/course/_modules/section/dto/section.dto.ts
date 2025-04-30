@@ -1,14 +1,14 @@
 import {
-  IsString,
-  IsNotEmpty,
-  IsOptional,
   IsEnum,
   IsInt,
+  IsNotEmpty,
   IsNumber,
+  IsOptional,
+  IsString,
 } from 'class-validator';
-import { VideoDto } from '../../video/dto/video.dto';
-import { PostDto } from '../../post/dto/post.dto';
 import { FileDto } from '../../../../file/dto/file.dto';
+import { PostDto } from '../../post/dto/post.dto';
+import { VideoDto } from '../../video/dto/video.dto';
 import { SectionType } from '../model/section.model';
 
 export class CreateSectionDto {

@@ -47,7 +47,7 @@ export class Course {
   @Column({ type: 'text', nullable: true })
   description?: string;
 
-  @Column({ type: 'int', nullable: true })
+  @Column({ type: 'float', nullable: true, default: 0 })
   price?: number;
 
   @Column({ type: 'varchar', length: 3, default: 'VND' })
@@ -142,4 +142,40 @@ export class Course {
 
   @OneToMany(() => NotificationModel, (sub) => sub.course)
   notifications: NotificationModel[];
+
+  @OneToMany(() => CourseProgress, (sub) => sub.course)
+  courseProgresses: CourseProgress[];
+}
+
+@Entity('course_progresses')
+export class CourseProgress {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column({ name: 'user_id', type: 'int' })
+  userId: number;
+
+  @Column({ name: 'course_id', type: 'int' })
+  courseId: number;
+
+  @Column({ type: 'float', default: 0 })
+  progress: number;
+
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt: Date;
+
+  @UpdateDateColumn({ name: 'updated_at' })
+  updatedAt: Date;
+
+  @ManyToOne(() => User, (user) => user.courseProgresses, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'user_id' })
+  user: User;
+
+  @ManyToOne(() => Course, (course) => course.courseProgresses, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'course_id' })
+  course: Course;
 }

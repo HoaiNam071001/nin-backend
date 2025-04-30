@@ -1,11 +1,11 @@
 import {
-  Entity,
-  PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  UpdateDateColumn,
-  ManyToOne,
+  Entity,
   JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { Course } from '../../../entity/course.entity';
 import { CourseTarget } from '../../../model/course.model';
@@ -35,7 +35,9 @@ export class Target {
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
-  @ManyToOne(() => Course, (course) => course.targets)
+  @ManyToOne(() => Course, (course) => course.targets, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'course_id' })
   course?: Course;
 }

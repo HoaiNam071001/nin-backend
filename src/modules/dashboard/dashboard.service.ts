@@ -1,29 +1,38 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from '../user/entity/user.entity';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import {
   PagingRequestBase,
   PagingRequestDto,
 } from '../../common/dto/pagination-request.dto';
 import { PaginationResponseDto } from '../../common/dto/pagination-response.dto';
-import { UserService } from '../user/user.service';
-import { UserRole } from '../user/entity/user-role.entity';
 import { Role } from '../../common/enums/roles.enum';
-import { AdminUserPayloadDto } from '../user/dto/update-user.dto';
-import { CreateUserDto, DashboardSubPayload } from './dashboard.dto';
-import { PaymentService } from '../course/_modules/payment/payment.service';
 import { ChartCourseResponse } from '../course/_modules/payment/payment.dto';
+import { PaymentService } from '../course/_modules/payment/payment.service';
+import { Course } from '../course/entity/course.entity';
+import { CourseStatus } from '../course/model/course.model';
+import { AdminUserPayloadDto } from '../user/dto/update-user.dto';
+import { UserRole } from '../user/entity/user-role.entity';
+import { User } from '../user/entity/user.entity';
+import { UserService } from '../user/user.service';
+import {
+  CreateUserDto,
+  DashboardReport,
+  DashboardSubPayload,
+} from './dashboard.dto';
 
 @Injectable()
 export class DashboardService {
   constructor(
     private paymentService: PaymentService,
+    private dataSource: DataSource,
     private userService: UserService,
     @InjectRepository(User)
     private userRepository: Repository<User>,
     @InjectRepository(UserRole)
     private userRoleRepository: Repository<UserRole>,
+    @InjectRepository(Course)
+    private readonly courseRepository: Repository<Course>,
   ) {}
 
   async findUsers(
@@ -149,5 +158,77 @@ export class DashboardService {
       rest,
       userIdsArray,
     );
+  }
+
+  async getReport(): Promise<DashboardReport> {
+    const [users, courses] = await Promise.all([
+      this.getUserCount(),
+      this.getCourseCount(),
+    ]);
+    return { users, courses };
+  }
+
+  async getUserCount() {
+    const mana = this.dataSource.manager;
+    const query = `
+      SELECT 
+          COUNT(DISTINCT u.id) AS total_users,
+          COUNT(DISTINCT CASE WHEN u.active = TRUE THEN u.id END) AS active_users,
+          COUNT(DISTINCT CASE WHEN u.active = FALSE THEN u.id END) AS inactive_users,
+          COUNT(DISTINCT CASE WHEN ur.role_name = '${Role.STUDENT}' THEN u.id END) AS student_count,
+          COUNT(DISTINCT CASE WHEN ur.role_name = '${Role.TEACHER}' THEN u.id END) AS teacher_count,
+          COUNT(DISTINCT CASE WHEN ur.role_name = '${Role.EDUCATION_MANAGER}' THEN u.id END) AS education_manager_count,
+          COUNT(DISTINCT CASE WHEN ur.role_name = '${Role.ADMIN}' THEN u.id END) AS admin_count
+      FROM users u
+      LEFT JOIN user_roles ur ON u.id = ur.user_id;
+    `;
+    const rawData = await mana.query(query);
+
+    const result = rawData[0]; // Kết quả query trả về một mảng, lấy phần tử đầu tiên
+    return {
+      totalUsers: parseInt(result.total_users, 10),
+      activeUsers: parseInt(result.active_users, 10),
+      inactiveUsers: parseInt(result.inactive_users, 10),
+      role: {
+        [Role.STUDENT]: parseInt(result.student_count, 10),
+        [Role.TEACHER]: parseInt(result.teacher_count, 10),
+        [Role.EDUCATION_MANAGER]: parseInt(result.education_manager_count, 10),
+        [Role.ADMIN]: parseInt(result.admin_count, 10),
+      },
+    };
+  }
+
+  async getCourseCount() {
+    const mana = this.dataSource.manager;
+
+    const statusCounts = Object.values(CourseStatus)
+      .map((status) => {
+        const columnName = `${status}_count`; // Tạo tên cột: draft_count, pending_count, ...
+        return `COUNT(CASE WHEN status = '${status}' THEN 1 END) AS ${columnName}`;
+      })
+      .join(', ');
+
+    const query = `
+      SELECT 
+          COUNT(*) AS total_courses,
+          ${statusCounts}
+      FROM courses;
+    `;
+
+    const rawData = await mana.query(query);
+
+    const result = rawData[0] || {};
+    const statusResult: { [key in CourseStatus]: number } = {} as {
+      [key in CourseStatus]: number;
+    };
+    for (const status of Object.values(CourseStatus)) {
+      const columnName = `${status}_count`;
+      statusResult[status] = parseInt(result[columnName] || '0', 10);
+    }
+
+    return {
+      totalCourses: parseInt(result.total_courses || '0', 10),
+      status: statusResult,
+    };
   }
 }

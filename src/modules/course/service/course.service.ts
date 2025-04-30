@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToClass } from 'class-transformer';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import {
   PagingRequestBase,
   PagingRequestDto,
@@ -18,6 +18,7 @@ import { TopicService } from '../_modules/topic/service/topic.service';
 import { CourseDto } from '../dto/course.dto';
 import { DiscountDto } from '../dto/discount.dto';
 import { Course } from '../entity/course.entity';
+import { CourseStatus } from '../model/course.model';
 @Injectable()
 export class CourseService {
   constructor(
@@ -66,9 +67,28 @@ export class CourseService {
 
   async findByOwner(userId: number, pagable: PagingRequestBase) {
     const query = new PagingRequestDto<Course>(pagable, ['name']).mapOrmQuery({
-      relations: ['owner', 'topics'],
+      relations: ['owner', 'topics', 'level'],
       where: {
         ownerId: userId,
+        status: Not(CourseStatus.DELETED),
+      },
+    });
+    const [courses, total] = await this.courseRepository.findAndCount(query);
+
+    return new PaginationResponseDto<Course>(
+      courses.map((e) => plainToClass(Course, e)),
+      total,
+      pagable.page,
+      pagable.size,
+    );
+  }
+
+  async findPublicByOwner(userId: number, pagable: PagingRequestBase) {
+    const query = new PagingRequestDto<Course>(pagable, ['name']).mapOrmQuery({
+      relations: ['owner', 'topics', 'level'],
+      where: {
+        ownerId: userId,
+        status: CourseStatus.READY,
       },
     });
     const [courses, total] = await this.courseRepository.findAndCount(query);
@@ -97,7 +117,7 @@ export class CourseService {
   async findOne(id: number): Promise<Course> {
     const course = await this.courseRepository.findOne({
       where: { id },
-      relations: ['owner'],
+      relations: ['owner', 'level'],
     });
     if (!course) {
       throw new CustomNotFoundException('Course not found');

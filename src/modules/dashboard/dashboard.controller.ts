@@ -1,8 +1,8 @@
 import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
-import { DashboardService } from './dashboard.service';
 import { PagingRequestBase } from '../../common/dto/pagination-request.dto';
 import { AdminUserPayloadDto } from '../user/dto/update-user.dto';
 import { CreateUserDto, DashboardSubPayload } from './dashboard.dto';
+import { DashboardService } from './dashboard.service';
 
 @Controller('dashboard')
 export class DashboardController {
@@ -39,5 +39,10 @@ export class DashboardController {
   @Get('course-report/chart')
   async getSubscriptionByDay(@Query() payload: DashboardSubPayload) {
     return this.dashboardService.getSubscriptionGroupByDay(payload);
+  }
+
+  @Get('system-info')
+  async systemInfo() {
+    return this.dashboardService.getReport();
   }
 }

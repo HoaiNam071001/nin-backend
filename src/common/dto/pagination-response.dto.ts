@@ -16,7 +16,7 @@ export class PaginationResponseDto<T> {
     this.page = +page || FIRST_PAGE;
     this.size = +size || DEFAULT_PAGE_SIZE;
     this.totalPages = Math.ceil(this.totalElements / this.size) || 0;
-    this.last = this.page === this.totalPages;
+    this.last = this.page - FIRST_PAGE === this.totalPages - 1;
     this.first = this.page === FIRST_PAGE;
   }
 }

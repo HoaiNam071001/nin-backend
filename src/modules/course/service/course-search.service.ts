@@ -1,11 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToClass } from 'class-transformer';
-import { In, LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
+import {
+  DataSource,
+  In,
+  LessThanOrEqual,
+  MoreThanOrEqual,
+  Not,
+  Repository,
+} from 'typeorm';
 import {
   DynamicFilter,
   PagingRequestBase,
   PagingRequestDto,
+  SortOrder,
 } from '../../../common/dto/pagination-request.dto';
 import { PaginationResponseDto } from '../../../common/dto/pagination-response.dto';
 import { CustomNotFoundException } from '../../../common/exceptions/http/custom-not-found.exception';
@@ -28,6 +36,7 @@ export class CourseSearchService {
   constructor(
     private fileService: FileService,
     private sectionService: SectionService,
+    private dataSource: DataSource,
     private searchService: SearchService,
     @InjectRepository(Course)
     private readonly courseRepository: Repository<Course>,
@@ -39,8 +48,12 @@ export class CourseSearchService {
   async find(pagable: PagingRequestBase, filtersDto: CourseSearchFilterDto) {
     const request = new PagingRequestDto<Course>(pagable, ['name', 'summary']);
     const filter: DynamicFilter<Course> = {};
+    filter.AND = [];
     if (filtersDto.status) {
-      filter.AND = [{ status: filtersDto.status as CourseStatus }];
+      filter.AND.push({ status: filtersDto.status as CourseStatus });
+    }
+    if (filtersDto.levelIds) {
+      filter.AND.push({ levelId: filtersDto.levelIds as number });
     }
     if (filtersDto.categoryIds) {
       filter.OR = [
@@ -52,8 +65,8 @@ export class CourseSearchService {
     const qb = request.buildQueryBuilder(
       this.courseRepository,
       'course',
-      filter,
       ['owner', 'category', 'subCategory', 'level', 'topics'],
+      filter,
     );
     const [data, total] = await qb.getManyAndCount();
 
@@ -77,7 +90,7 @@ export class CourseSearchService {
     }
 
     const courses = await this.courseRepository.find({
-      where: { id: In(ids) }, // Use In() to find multiple IDs
+      where: { id: In(ids), status: Not(CourseStatus.DELETED) },
     });
 
     return courses;
@@ -99,9 +112,10 @@ export class CourseSearchService {
       ],
     });
 
-    if (!course) {
+    if (!course || course.status === CourseStatus.DELETED) {
       throw new CustomNotFoundException('Course not found');
     }
+
     const now = new Date(); // Lấy thời gian hiện tại
     const discounts = await this.discountRepository.find({
       where: {
@@ -140,8 +154,9 @@ export class CourseSearchService {
         instructors: {
           userId,
         },
+        status: Not(CourseStatus.DELETED),
       },
-      relations: ['instructors', 'instructors.user', 'owner'],
+      relations: ['instructors', 'instructors.user', 'owner', 'level'],
     });
     const [data, total] = await this.courseRepository.findAndCount(query);
 
@@ -153,5 +168,108 @@ export class CourseSearchService {
       pagable.page,
       pagable.size,
     );
+  }
+
+  async getTopRatings() {
+    const mana = this.dataSource.manager;
+    const query = `
+    WITH top_rated AS (
+        -- Lấy các khóa học có >= 10 đánh giá
+        SELECT 
+            c.*,  -- Tất cả field từ courses
+            u.id AS owner_id,              -- ID của owner
+            u.email AS owner_email,        -- Email
+            u.avatar AS owner_avatar,      -- Avatar
+            u.first_name AS owner_first_name,  -- Họ
+            u.last_name AS owner_last_name,    -- Tên
+            u.full_name AS owner_full_name,    -- Họ và tên đầy đủ
+            l.name AS level_name,                  -- Tên cấp độ từ levels
+            c.rating AS average_rating,
+            COUNT(cr.id) AS review_count,
+            (COUNT(cr.id) * c.rating + 10 * 3.5) / (COUNT(cr.id) + 10) AS weighted_rating
+        FROM courses c
+        LEFT JOIN course_ratings cr ON c.id = cr.course_id
+        LEFT JOIN users u ON c.owner_id = u.id  -- Relation với bảng users
+        LEFT JOIN levels l ON c.level_id = l.id  -- Relation với bảng levels
+        WHERE c.status = 'ready'
+        GROUP BY 
+            c.id, 
+            u.id, u.email, u.avatar, u.first_name, u.last_name, u.full_name, l.name
+        HAVING COUNT(cr.id) >= 10
+        ORDER BY weighted_rating DESC
+        LIMIT 10
+    ),
+    remaining AS (
+        -- Lấy thêm các khóa học có < 10 đánh giá nếu cần
+        SELECT 
+            c.*,  -- Tất cả field từ courses
+            u.id AS owner_id,
+            u.email AS owner_email,
+            u.avatar AS owner_avatar,
+            u.first_name AS owner_first_name,
+            u.last_name AS owner_last_name,
+            u.full_name AS owner_full_name,
+            l.name AS level_name,
+            c.rating AS average_rating, -- Tính toán average_rating từ course_ratings
+            COUNT(cr.id) AS review_count,
+            (COUNT(cr.id) * c.rating + 10 * 3.5) / (COUNT(cr.id) + 10) AS weighted_rating
+        FROM courses c
+        LEFT JOIN course_ratings cr ON c.id = cr.course_id
+        LEFT JOIN users u ON c.owner_id = u.id
+        LEFT JOIN levels l ON c.level_id = l.id
+        WHERE c.id NOT IN (SELECT id FROM top_rated) AND c.status = 'ready'  -- Loại bỏ các khóa đã lấy
+        GROUP BY 
+            c.id, 
+            u.id, u.email, u.avatar, u.first_name, u.last_name, u.full_name, l.name
+        HAVING c.rating > 0  -- Chỉ lấy các khóa có ít nhất 1 đánh giá
+        ORDER BY average_rating DESC, c.updated_at DESC  -- Tiêu chí phụ
+        LIMIT (10 - (SELECT COUNT(*) FROM top_rated)) 
+    )
+    -- Kết hợp kết quả
+    SELECT * FROM top_rated
+    UNION
+    SELECT * FROM remaining
+    ORDER BY weighted_rating DESC, average_rating DESC, updated_at DESC
+    LIMIT 10;
+    `;
+    const rawData = await mana.query(query);
+
+    // Chuyển đổi kết quả rawData thành cấu trúc mong muốn
+    return rawData.map((item) => ({
+      id: item.id,
+      name: item.name,
+      thumbnail: item.thumbnail,
+      description: item.description,
+      estimatedTime: item.estimatedTime,
+      price: item.price,
+      rating: item.rating,
+      slug: item.slug,
+      status: item.status,
+      owner: {
+        id: item.owner_id,
+        email: item.owner_email,
+        avatar: item.owner_avatar,
+        firstName: item.owner_first_name,
+        lastName: item.owner_last_name,
+        fullName: item.owner_full_name,
+      },
+      level: {
+        id: item.level_id,
+        name: item.level_name,
+      },
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt,
+    }));
+  }
+
+  async getNewPublishCourse() {
+    const [data] = await this.courseRepository.findAndCount({
+      where: { status: CourseStatus.READY },
+      order: { updatedAt: SortOrder.DESC },
+      relations: ['owner', 'category', 'level', 'subCategory'],
+      take: 10,
+    });
+
+    return data;
   }
 }

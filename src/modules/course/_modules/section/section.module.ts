@@ -1,22 +1,25 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Section } from './entity/section.entity';
-import { SectionService } from './service/section.service';
-import { SectionController } from './controller/section.controller';
+import { FileModule } from '../../../file/file.module';
+import { User } from '../../../user/entity/user.entity';
 import { UserModule } from '../../../user/user.module';
 import { CourseModule } from '../../course.module';
-import { FileModule } from '../../../file/file.module';
+import { SectionInprogressController } from './controller/section-progress.controller';
+import { SectionController } from './controller/section.controller';
+import { Section, SectionProgress } from './entity/section.entity';
+import { SectionInprogressService } from './service/section-inprogress.service';
+import { SectionService } from './service/section.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Section]),
+    TypeOrmModule.forFeature([Section, User, SectionProgress]),
     UserModule,
     FileModule,
     forwardRef(() => CourseModule),
   ],
-  providers: [SectionService],
-  controllers: [SectionController],
-  exports: [SectionService], // Export the service so it can be used in other modules
+  providers: [SectionService, SectionInprogressService],
+  controllers: [SectionController, SectionInprogressController],
+  exports: [SectionService, SectionInprogressService],
 })
 export class SectionModule {
   static TypeOrmModule: Section;
