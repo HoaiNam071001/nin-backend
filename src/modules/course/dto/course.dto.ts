@@ -1,20 +1,20 @@
-import {
-  IsString,
-  IsNotEmpty,
-  IsOptional,
-  IsInt,
-  IsNumber,
-} from 'class-validator';
 import { Expose } from 'class-transformer';
+import {
+  IsInt,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
+import { CourseSubscriptionDto } from '../../payment/payment.dto';
 import { ShortUser } from '../../user/dto/user.dto';
-import { TopicDto } from '../_modules/topic/dto/topic.dto';
-import { Level } from '../_modules/level/entity/level.entity';
 import { CategoryDto } from '../_modules/category/dto/category.dto';
-import { CourseStatus } from '../model/course.model';
-import { InstructorDto } from './instructor.dto';
+import { Level } from '../_modules/level/entity/level.entity';
 import { Target } from '../_modules/target/entity/target.entity';
+import { TopicDto } from '../_modules/topic/dto/topic.dto';
+import { CourseStatus } from '../model/course.model';
 import { DiscountDto } from './discount.dto';
-import { CourseSubscriptionDto } from '../_modules/payment/payment.dto';
+import { InstructorDto } from './instructor.dto';
 
 export class CourseDto {
   @Expose()

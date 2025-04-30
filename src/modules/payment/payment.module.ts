@@ -1,9 +1,5 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { NotificationsModule } from '../../../user/modules/notifications/notifications.module';
-import { CourseModule } from '../../course.module';
-import { Course } from '../../entity/course.entity';
-import { CartModule } from '../cart/cart.module';
 import { PaymentController } from './payment.controller';
 import {
   CourseSubscription,
@@ -11,6 +7,10 @@ import {
   PaymentTransaction,
 } from './payment.entity';
 import { PaymentService } from './payment.service';
+import { CourseModule } from '../course/course.module';
+import { NotificationsModule } from '../user/modules/notifications/notifications.module';
+import { CartModule } from '../course/_modules/cart/cart.module';
+import { Course } from '../course/entity/course.entity';
 @Module({
   imports: [
     TypeOrmModule.forFeature([

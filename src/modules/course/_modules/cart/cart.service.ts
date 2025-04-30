@@ -7,8 +7,8 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { PaymentService } from '../../../payment/payment.service';
 import { CartItem } from './cart.entity';
-import { PaymentService } from '../payment/payment.service';
 
 @Injectable()
 export class CartService {

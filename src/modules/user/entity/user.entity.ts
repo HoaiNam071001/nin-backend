@@ -12,10 +12,6 @@ import {
 import { AIConversation, AIMessage } from '../../ai/entity/chatbot.entity';
 import { CartItem } from '../../course/_modules/cart/cart.entity';
 import { CourseComment } from '../../course/_modules/comment/entity/comment.entity';
-import {
-  CourseSubscription,
-  PaymentTransaction,
-} from '../../course/_modules/payment/payment.entity';
 import { CourseRating } from '../../course/_modules/rating/course-rating.entity';
 import { SectionProgress } from '../../course/_modules/section/entity/section.entity';
 import { Topic } from '../../course/_modules/topic/entity/topic.entity';
@@ -24,6 +20,7 @@ import { Instructor } from '../../course/entity/instructor.entity';
 import { RecentSearch } from '../../course/entity/recent-searches.entity';
 import { NFile } from '../../file/entity/file.entity';
 import { UserRole } from './user-role.entity';
+import { CourseSubscription, PaymentTransaction } from '../../payment/payment.entity';
 
 @Entity('users') // Tên bảng trong cơ sở dữ liệu
 export class User {

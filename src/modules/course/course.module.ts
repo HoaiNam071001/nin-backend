@@ -2,13 +2,13 @@ import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SearchModule } from '../ai/search.module';
 import { FileModule } from '../file/file.module';
+import { PaymentModule } from '../payment/payment.module';
 import { NotificationsModule } from '../user/modules/notifications/notifications.module';
 import { UserModule } from '../user/user.module';
 import { CartModule } from './_modules/cart/cart.module';
 import { CategoryModule } from './_modules/category/category.module';
 import { CourseCommentModule } from './_modules/comment/comment.module';
 import { LevelModule } from './_modules/level/level.module';
-import { PaymentModule } from './_modules/payment/payment.module';
 import { PostModule } from './_modules/post/post.module';
 import { CourseRatingModule } from './_modules/rating/course-rating.module';
 import {
@@ -61,7 +61,6 @@ const SERVICES = [
     PostModule,
     VideoModule,
     TargetModule,
-    PaymentModule,
     SearchModule,
     FileModule,
     forwardRef(() => PaymentModule),

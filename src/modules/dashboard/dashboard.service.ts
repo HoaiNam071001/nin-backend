@@ -7,10 +7,10 @@ import {
 } from '../../common/dto/pagination-request.dto';
 import { PaginationResponseDto } from '../../common/dto/pagination-response.dto';
 import { Role } from '../../common/enums/roles.enum';
-import { ChartCourseResponse } from '../course/_modules/payment/payment.dto';
-import { PaymentService } from '../course/_modules/payment/payment.service';
 import { Course } from '../course/entity/course.entity';
 import { CourseStatus } from '../course/model/course.model';
+import { ChartCourseResponse } from '../payment/payment.dto';
+import { PaymentService } from '../payment/payment.service';
 import { AdminUserPayloadDto } from '../user/dto/update-user.dto';
 import { UserRole } from '../user/entity/user-role.entity';
 import { User } from '../user/entity/user.entity';

@@ -1,7 +1,7 @@
 import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { Role } from '../../common/enums/roles.enum';
-import { ChartCoursePayload } from '../course/_modules/payment/payment.dto';
 import { CourseStatus } from '../course/model/course.model';
+import { ChartCoursePayload } from '../payment/payment.dto';
 
 export class CreateUserDto {
   @IsEmail()

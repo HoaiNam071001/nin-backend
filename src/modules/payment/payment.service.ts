@@ -8,18 +8,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { plainToClass } from 'class-transformer';
 import { Between, DataSource, In, Repository } from 'typeorm';
 import {
-  PagingRequestBase,
-  PagingRequestDto,
-} from '../../../../common/dto/pagination-request.dto';
-import { PaginationResponseDto } from '../../../../common/dto/pagination-response.dto';
-import { Currency, DefaultCurrency } from '../../../../common/enums/unit.enum';
-import { User } from '../../../user/entity/user.entity';
-// import { NotificationType } from '../../../user/modules/notifications/notification.dto';
-import { NotificationType } from '../../../user/modules/notifications/notification.dto';
-import { NotificationsService } from '../../../user/modules/notifications/notifications.service';
-import { Course } from '../../entity/course.entity';
-import { CartService } from '../cart/cart.service';
-import {
   ChartCoursePayload,
   ChartCourseResponse,
   CourseSubscriptionDto,
@@ -33,6 +21,17 @@ import {
   PaymentDetail,
   PaymentTransaction,
 } from './payment.entity';
+import { NotificationsService } from '../user/modules/notifications/notifications.service';
+import { CartService } from '../course/_modules/cart/cart.service';
+import { Course } from '../course/entity/course.entity';
+import { User } from '../user/entity/user.entity';
+import { Currency, DefaultCurrency } from '../../common/enums/unit.enum';
+import { PaginationResponseDto } from '../../common/dto/pagination-response.dto';
+import { NotificationType } from '../user/modules/notifications/notification.dto';
+import {
+  PagingRequestBase,
+  PagingRequestDto,
+} from '../../common/dto/pagination-request.dto';
 
 @Injectable()
 export class PaymentService {

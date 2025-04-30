@@ -9,9 +9,9 @@ import {
   OneToMany,
   OneToOne,
 } from 'typeorm';
-import { User } from '../../../user/entity/user.entity';
-import { Course } from '../../entity/course.entity';
 import { CourseSubType, PaymentMethod, PaymentStatus } from './payment.dto';
+import { User } from '../user/entity/user.entity';
+import { Course } from '../course/entity/course.entity';
 
 @Entity('payment_transactions')
 export class PaymentTransaction {

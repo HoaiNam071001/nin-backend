@@ -9,6 +9,7 @@ import { CourseModule } from './modules/course/course.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { DataModule } from './modules/data/data.module';
 import { FileModule } from './modules/file/file.module';
+import { PaymentModule } from './modules/payment/payment.module';
 import { UserModule } from './modules/user/user.module';
 
 @Module({
@@ -26,6 +27,7 @@ import { UserModule } from './modules/user/user.module';
     UserModule,
     CourseModule,
     AuthModule,
+    PaymentModule,
     DataModule,
     DashboardModule,
   ],

@@ -1,9 +1,9 @@
 import { forwardRef, Module } from '@nestjs/common';
-import { CartService } from './cart.service';
-import { CartController } from './cart.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { PaymentModule } from '../../../payment/payment.module';
+import { CartController } from './cart.controller';
 import { CartItem } from './cart.entity';
-import { PaymentModule } from '../payment/payment.module';
+import { CartService } from './cart.service';
 
 @Module({
   imports: [

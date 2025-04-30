@@ -2,8 +2,8 @@ import { Module } from '@nestjs/common';
 
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { PaymentModule } from '../course/_modules/payment/payment.module';
 import { Course } from '../course/entity/course.entity';
+import { PaymentModule } from '../payment/payment.module';
 import { UserRole } from '../user/entity/user-role.entity';
 import { User } from '../user/entity/user.entity';
 import { UserModule } from '../user/user.module';

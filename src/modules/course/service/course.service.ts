@@ -8,12 +8,12 @@ import {
 } from '../../../common/dto/pagination-request.dto';
 import { PaginationResponseDto } from '../../../common/dto/pagination-response.dto';
 import { CustomNotFoundException } from '../../../common/exceptions/http/custom-not-found.exception';
+import { PaymentService } from '../../payment/payment.service';
 import { ShortUser } from '../../user/dto/user.dto';
 import { User } from '../../user/entity/user.entity';
 import { UserService } from '../../user/user.service';
 import { CategoryDto } from '../_modules/category/dto/category.dto';
 import { LevelDto } from '../_modules/level/dto/level.dto';
-import { PaymentService } from '../_modules/payment/payment.service';
 import { TopicService } from '../_modules/topic/service/topic.service';
 import { CourseDto } from '../dto/course.dto';
 import { DiscountDto } from '../dto/discount.dto';

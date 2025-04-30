@@ -10,16 +10,16 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { NFile } from '../../file/entity/file.entity';
+import {
+  CourseSubscription,
+  PaymentDetail,
+} from '../../payment/payment.entity';
 import { User } from '../../user/entity/user.entity';
 import { NotificationModel } from '../../user/modules/notifications/notification.entity';
 import { CartItem } from '../_modules/cart/cart.entity';
 import { Category } from '../_modules/category/entity/category.entity';
 import { CourseComment } from '../_modules/comment/entity/comment.entity';
 import { Level } from '../_modules/level/entity/level.entity';
-import {
-  CourseSubscription,
-  PaymentDetail,
-} from '../_modules/payment/payment.entity';
 import { CourseRating } from '../_modules/rating/course-rating.entity';
 import { Section } from '../_modules/section/entity/section.entity';
 import { Target } from '../_modules/target/entity/target.entity';

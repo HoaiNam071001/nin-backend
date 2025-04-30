@@ -23,9 +23,9 @@ import {
   CreateSubscriptionDto,
   PaymentStatus,
 } from './payment.dto';
-import { JwtAuthGuard } from '../../../auth/jwt-auth.guard';
-import { AuthRequest } from '../../../../common/interfaces';
-import { PagingRequestBase } from '../../../../common/dto/pagination-request.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { AuthRequest } from '../../common/interfaces';
+import { PagingRequestBase } from '../../common/dto/pagination-request.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('payments')

@@ -1,5 +1,5 @@
-import { Currency } from '../../../../common/enums/unit.enum';
 import { IsNumber, IsOptional } from 'class-validator';
+import { Currency } from '../../common/enums/unit.enum';
 
 export interface CreatePaymentPayloadDto {
   courseInfo: {
