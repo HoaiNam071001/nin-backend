@@ -31,6 +31,7 @@
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/swagger": "^8.0.7",
     "@nestjs/typeorm": "^10.0.2",
+    "@noble/hashes": "^1.8.0",
     "axios": "^1.7.8",
     "bcrypt": "^5.1.1",
     "class-transformer": "^0.5.1",

@@ -8,12 +8,25 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { plainToClass } from 'class-transformer';
 import { Between, DataSource, In, Repository } from 'typeorm';
 import {
+  PagingRequestBase,
+  PagingRequestDto,
+} from '../../common/dto/pagination-request.dto';
+import { PaginationResponseDto } from '../../common/dto/pagination-response.dto';
+import { Currency, DefaultCurrency } from '../../common/enums/unit.enum';
+import { CartService } from '../course/_modules/cart/cart.service';
+import { Course } from '../course/entity/course.entity';
+import { User } from '../user/entity/user.entity';
+import { NotificationType } from '../user/modules/notifications/notification.dto';
+import { NotificationsService } from '../user/modules/notifications/notifications.service';
+import { MoMoPaymentService } from './_method/momo.service';
+import {
   ChartCoursePayload,
   ChartCourseResponse,
   CourseSubscriptionDto,
   CourseSubType,
   CreatePaymentPayloadDto,
   CreateSubscriptionDto,
+  PaymentMethod,
   PaymentStatus,
 } from './payment.dto';
 import {
@@ -21,21 +34,11 @@ import {
   PaymentDetail,
   PaymentTransaction,
 } from './payment.entity';
-import { NotificationsService } from '../user/modules/notifications/notifications.service';
-import { CartService } from '../course/_modules/cart/cart.service';
-import { Course } from '../course/entity/course.entity';
-import { User } from '../user/entity/user.entity';
-import { Currency, DefaultCurrency } from '../../common/enums/unit.enum';
-import { PaginationResponseDto } from '../../common/dto/pagination-response.dto';
-import { NotificationType } from '../user/modules/notifications/notification.dto';
-import {
-  PagingRequestBase,
-  PagingRequestDto,
-} from '../../common/dto/pagination-request.dto';
 
 @Injectable()
 export class PaymentService {
   constructor(
+    private moMoPaymentService: MoMoPaymentService,
     @Inject(forwardRef(() => NotificationsService))
     private notificationsService: NotificationsService,
     private dataSource: DataSource,
@@ -50,6 +53,26 @@ export class PaymentService {
     @InjectRepository(Course)
     private readonly courseRepository: Repository<Course>,
   ) {}
+
+  async pay(payload: CreatePaymentPayloadDto, user: User) {
+    const { method } = payload;
+    if (method === PaymentMethod.MOMO) {
+      const amount = payload.courseInfo.reduce(
+        (res, cur) => res + cur.amount,
+        0,
+      );
+      payload.status = PaymentStatus.PENDING;
+      payload.transactionUId = `NIN-${user.id}-${Date.now()}`;
+      await this.createPaymentTransactionAndDetails(payload, user);
+      const res = await this.moMoPaymentService.createPayment(
+        payload.transactionUId,
+        'NIN payment',
+        amount,
+      );
+      return res;
+    }
+    throw new BadRequestException('Please select another payment method');
+  }
 
   // PaymentTransaction methods
   async createPaymentTransactionAndDetails(
@@ -92,21 +115,6 @@ export class PaymentService {
           return this.paymentDetailRepository.save(detail);
         }),
       );
-
-      if (payload.status === PaymentStatus.SUCCESS) {
-        await Promise.all(
-          details.map(async (detailData) => {
-            return this.createCourseSubscription(
-              {
-                courseId: detailData.courseId || detailData.course?.id,
-                expirationDate: null,
-                transactionId: detailData.id,
-              },
-              user.id,
-            );
-          }),
-        );
-      }
       this.cartService.clearManyCart(
         user.id,
         payload.courseInfo.map((e) => e.id),
@@ -115,6 +123,33 @@ export class PaymentService {
     } catch (error) {
       throw new BadRequestException(error);
     }
+  }
+
+  async subscriptionByTransaction(
+    transactionUId: string,
+    status: PaymentStatus,
+  ) {
+    const transaction = await this.updatePaymentTransactionStatusFromGateway(
+      transactionUId,
+      status,
+    );
+    const details = await this.paymentDetailRepository.find({
+      where: {
+        transactionId: transaction.id,
+      },
+    });
+    const sub = await Promise.all(
+      details.map(async (detailData) => {
+        return this.createCourseSubscription(
+          {
+            courseId: detailData.courseId || detailData.course?.id,
+            transactionId: detailData.id,
+          },
+          transaction.userId,
+        );
+      }),
+    );
+    return sub;
   }
 
   async findAllTransactions(): Promise<PaymentTransaction[]> {
@@ -155,7 +190,6 @@ export class PaymentService {
     if (!transaction) {
       throw new Error(`Transaction with id ${transactionUId} not found`);
     }
-
     await this.paymentTransactionRepository.update(transaction.id, { status });
     return this.findOneTransaction(transaction.id);
   }

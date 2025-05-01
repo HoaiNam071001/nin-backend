@@ -1,5 +1,10 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { CartModule } from '../course/_modules/cart/cart.module';
+import { CourseModule } from '../course/course.module';
+import { Course } from '../course/entity/course.entity';
+import { NotificationsModule } from '../user/modules/notifications/notifications.module';
+import { MoMoPaymentService } from './_method/momo.service';
 import { PaymentController } from './payment.controller';
 import {
   CourseSubscription,
@@ -7,10 +12,6 @@ import {
   PaymentTransaction,
 } from './payment.entity';
 import { PaymentService } from './payment.service';
-import { CourseModule } from '../course/course.module';
-import { NotificationsModule } from '../user/modules/notifications/notifications.module';
-import { CartModule } from '../course/_modules/cart/cart.module';
-import { Course } from '../course/entity/course.entity';
 @Module({
   imports: [
     TypeOrmModule.forFeature([
@@ -23,7 +24,7 @@ import { Course } from '../course/entity/course.entity';
     forwardRef(() => CartModule),
     forwardRef(() => NotificationsModule),
   ],
-  providers: [PaymentService],
+  providers: [PaymentService, MoMoPaymentService],
   controllers: [PaymentController],
   exports: [PaymentService],
 })
