@@ -47,6 +47,8 @@ export class SectionInprogressService {
     });
 
     const item = await this.sectionProgressRepository.save(sectionProgress);
+
+    this.courseProgressService.updateProgress(userId, section?.courseId);
     return item;
   }
 
@@ -57,6 +59,7 @@ export class SectionInprogressService {
   ): Promise<SectionProgress> {
     const sectionProgress = await this.sectionProgressRepository.findOne({
       where: { user: { id: userId }, section: { id: sectionId } },
+      relations: ['section'],
     });
 
     if (!sectionProgress) {
@@ -68,13 +71,23 @@ export class SectionInprogressService {
       });
 
       const item = await this.sectionProgressRepository.save(sectionProgress);
-      return this.sectionProgressRepository.findOne({
+      const progress = await this.sectionProgressRepository.findOne({
         where: { id: item.id },
         relations: ['section'],
       });
+      this.courseProgressService.updateProgress(
+        userId,
+        progress.section?.courseId,
+      );
+      return progress;
     }
     Object.assign(sectionProgress, updateData);
     await this.sectionProgressRepository.save(sectionProgress);
+
+    this.courseProgressService.updateProgress(
+      userId,
+      sectionProgress.section?.courseId,
+    );
     return this.sectionProgressRepository.findOne({
       where: { id: sectionProgress.id },
       relations: ['section'],

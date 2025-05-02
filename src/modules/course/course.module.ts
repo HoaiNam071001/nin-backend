@@ -19,6 +19,7 @@ import { SectionModule } from './_modules/section/section.module';
 import { TargetModule } from './_modules/target/target.module';
 import { TopicModule } from './_modules/topic/topic.module';
 import { VideoModule } from './_modules/video/video.module';
+import { CourseProgressController } from './controller/course-progress.controller';
 import { CourseSearchController } from './controller/course-search.controller';
 import { CourseController } from './controller/course.controller';
 import { RecentSearchesController } from './controller/recent-searches.controller';
@@ -74,6 +75,7 @@ const SERVICES = [
     CourseController,
     CourseSearchController,
     RecentSearchesController,
+    CourseProgressController,
   ],
   exports: [...SERVICES],
 })

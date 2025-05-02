@@ -22,14 +22,13 @@ export class CourseProgressService {
     private sectionProgressRepository: Repository<SectionProgress>,
   ) {}
 
-  async updateSectionProgress(
+  async updateProgress(
     userId: number,
     courseId: number,
   ): Promise<CourseProgress> {
     const courseProgress = await this.courseProgressRepository.findOne({
       where: { user: { id: userId }, course: { id: courseId } },
     });
-
     const progress = await this.getProgress(userId, courseId);
 
     if (!courseProgress) {
@@ -50,7 +49,6 @@ export class CourseProgressService {
     await this.courseProgressRepository.save(courseProgress);
     return this.courseProgressRepository.findOne({
       where: { id: courseProgress.id },
-      relations: ['section'],
     });
   }
 
@@ -94,7 +92,7 @@ export class CourseProgressService {
         where: {
           userId,
         },
-        relations: ['course'],
+        relations: ['course', 'course.owner'],
       },
     );
 
