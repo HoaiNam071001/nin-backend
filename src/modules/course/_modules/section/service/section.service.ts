@@ -160,12 +160,15 @@ export class SectionService {
       if (!user) {
         throw new UnauthorizedException('Unauthorized');
       }
-      const section = await await this.findOneFullData(sectionId);
+      const section = await this.sectionRepository.findOne({
+        where: { id: sectionId },
+      });
       if (!section) {
         throw new NotFoundException(`Section not found`);
       }
 
       const type = SystemFileType.COURSE_CONTENT;
+      console.log(section);
       const savedFile: FileDto = await this.fileService.create(file, {
         systemType: type,
         sectionId,

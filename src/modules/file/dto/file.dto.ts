@@ -52,3 +52,8 @@ export class FilePayloadDto {
   sectionId?: number;
   systemType?: SystemFileType;
 }
+
+export class FileSearchPayload {
+  userIds?: number[];
+  courseIds?: number[];
+}

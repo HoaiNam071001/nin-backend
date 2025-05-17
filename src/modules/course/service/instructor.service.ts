@@ -1,11 +1,11 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Instructor } from '../entity/instructor.entity';
 import { plainToClass } from 'class-transformer';
-import { InstructorDto, InstructorPayloadDto } from '../dto/instructor.dto';
+import { Repository } from 'typeorm';
 import { ShortUser } from '../../user/dto/user.dto';
 import { User } from '../../user/entity/user.entity';
+import { InstructorDto, InstructorPayloadDto } from '../dto/instructor.dto';
+import { Instructor } from '../entity/instructor.entity';
 @Injectable()
 export class InstructorService {
   constructor(

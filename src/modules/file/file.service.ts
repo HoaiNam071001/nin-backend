@@ -1,10 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { NFile } from './entity/file.entity';
-import { FileDto, FilePayloadDto } from './dto/file.dto';
-import { DataService } from '../data/services/data.service';
 import { plainToClass } from 'class-transformer';
+import { In, Repository } from 'typeorm';
+import {
+  PagingRequestBase,
+  PagingRequestDto,
+} from '../../common/dto/pagination-request.dto';
+import { PaginationResponseDto } from '../../common/dto/pagination-response.dto';
+import { DataService } from '../data/services/data.service';
+import { FileDto, FilePayloadDto, FileSearchPayload } from './dto/file.dto';
+import { NFile } from './entity/file.entity';
 
 @Injectable()
 export class FileService {
@@ -70,5 +75,33 @@ export class FileService {
       where: { courseId },
     });
     return count;
+  }
+
+  async find(
+    pagable: PagingRequestBase,
+    payload: FileSearchPayload,
+  ): Promise<PaginationResponseDto<NFile>> {
+    const where: any = {};
+
+    if (payload.userIds && payload.userIds.length > 0) {
+      where.userId = In(payload.userIds);
+    }
+
+    if (payload.courseIds && payload.courseIds.length > 0) {
+      where.courseId = In(payload.courseIds);
+    }
+
+    const query = new PagingRequestDto<NFile>(pagable, []).mapOrmQuery({
+      where,
+      relations: ['user', 'course'],
+    });
+    const [data, total] = await this.fileRepository.findAndCount(query);
+
+    return new PaginationResponseDto<NFile>(
+      data,
+      total,
+      pagable.page,
+      pagable.size,
+    );
   }
 }

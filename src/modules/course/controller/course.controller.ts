@@ -114,10 +114,13 @@ export class CourseController {
     return this.instructorService.remove(user, id);
   }
   // // Xóa một khóa học
-  // @Delete(':id')
-  // async remove(@Param('id') id: number): Promise<void> {
-  //   return this.courseService.remove(id);
-  // }
+  @Delete(':id')
+  async remove(
+    @Param('id') id: number,
+    @Req() { user }: AuthRequest,
+  ): Promise<void> {
+    return this.courseService.remove(id, user);
+  }
 
   // Endpoint tạo giảm giá
   @Post(':courseId/discounts')

@@ -1,19 +1,21 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { hmac } from '@noble/hashes/hmac';
 import { sha256 } from '@noble/hashes/sha256';
 import axios from 'axios';
+import { ENV_ATTR } from '../../../config/app.config';
 import { PaymentMethod } from '../payment.dto';
 
 @Injectable()
 export class MoMoPaymentService {
+  constructor(private configService: ConfigService) {}
   private readonly endpoint =
     'https://test-payment.momo.vn/v2/gateway/api/create';
   private readonly partnerCode = PaymentMethod.MOMO;
   private readonly accessKey = 'F8BBA842ECF85';
   private readonly secretKey = 'K951B6PE1waDMi640xX08PD3vg6EkVlz';
-  private readonly redirectUrl = 'http://localhost:3000/en/course/registered';
-  private readonly ipnUrl =
-    'https://fc68-116-111-185-4.ngrok-free.app/payments/notify';
+  private readonly redirectUrl = `${this.configService.get<string>(ENV_ATTR.CLIENT_URL)}/en/course/registered`;
+  private readonly ipnUrl = `${this.configService.get<string>(ENV_ATTR.APP_URL)}/payments/notify`;
 
   async createPayment(orderId: string, orderInfo: string, amount: number) {
     const requestId = orderId;

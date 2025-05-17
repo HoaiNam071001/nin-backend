@@ -19,6 +19,7 @@ import {
   CreateUserDto,
   DashboardReport,
   DashboardSubPayload,
+  DashboardUserFile,
 } from './dashboard.dto';
 
 @Injectable()
@@ -230,5 +231,75 @@ export class DashboardService {
       totalCourses: parseInt(result.total_courses || '0', 10),
       status: statusResult,
     };
+  }
+
+  async getChartFileByUser(limit = 5): Promise<DashboardUserFile[]> {
+    const mana = this.dataSource.manager;
+
+    const query = `
+        WITH TopUsers AS (
+    SELECT 
+        f.user_id::text as user_id, 
+        SUM(f.size) as total_size_bytes,
+        COUNT(*) as file_count,
+        u.id as user_id_int,
+        u.full_name,
+        u.email,
+        u.avatar
+    FROM files f
+    LEFT JOIN users u ON f.user_id = u.id
+    GROUP BY f.user_id, u.id, u.full_name, u.email, u.avatar
+    ORDER BY total_size_bytes DESC
+    LIMIT $1
+),
+Others AS (
+    SELECT 
+        NULL as user_id, 
+        SUM(size) as total_size_bytes,
+        COUNT(*) as file_count,
+        NULL::integer as user_id_int,
+        NULL as full_name,
+        NULL as email,
+        NULL as avatar
+    FROM files
+    WHERE user_id NOT IN (SELECT user_id::int FROM TopUsers WHERE user_id IS NOT NULL)
+)
+SELECT 
+    user_id, 
+    total_size_bytes,
+    file_count,
+    user_id_int,
+    full_name,
+    email,
+    avatar
+FROM TopUsers
+UNION
+SELECT 
+    user_id, 
+    total_size_bytes,
+    file_count,
+    user_id_int,
+    full_name,
+    email,
+    avatar
+FROM Others
+ORDER BY total_size_bytes DESC;
+    `;
+
+    const rawData = await mana.query(query, [limit]);
+    return rawData
+      .map((item) => ({
+        size: Number(item.total_size_bytes),
+        count: +item.file_count,
+        user: !item?.user_id
+          ? null
+          : {
+              id: item.user_id_int,
+              fullName: item.full_name,
+              email: item.email,
+              avatar: item.avatar,
+            },
+      }))
+      .filter((e) => e.size);
   }
 }

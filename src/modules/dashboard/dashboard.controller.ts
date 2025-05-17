@@ -45,4 +45,9 @@ export class DashboardController {
   async systemInfo() {
     return this.dashboardService.getReport();
   }
+
+  @Get('user-file-count')
+  async fileCountByUser() {
+    return this.dashboardService.getChartFileByUser();
+  }
 }

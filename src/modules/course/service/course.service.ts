@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToClass } from 'class-transformer';
 import { Not, Repository } from 'typeorm';
@@ -125,7 +129,26 @@ export class CourseService {
     return plainToClass(Course, course);
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: number, user: User): Promise<void> {
+    const course = await this.courseRepository.findOne({
+      where: { id },
+    });
+    if (!course) {
+      throw new CustomNotFoundException('Course not found');
+    }
+    if (course.ownerId !== user.id) {
+      throw new UnauthorizedException(
+        'You are not authorized to delete this course',
+      );
+    }
+    if (course.status === CourseStatus.DELETED) {
+      throw new BadRequestException('Course already deleted');
+    }
+    if (course.status === CourseStatus.READY) {
+      course.status = CourseStatus.DELETED;
+      await this.courseRepository.save(course);
+      return;
+    }
     await this.courseRepository.delete(id);
   }
 }

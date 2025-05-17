@@ -87,14 +87,15 @@ export class ChatbotService {
 
       // Lấy 5 tin nhắn gần đây để tạo ngữ cảnh
       const messages = await this.getMessages(conversationId, {
-        size: 3,
+        size: 2,
         sort: `createdAt:${SortOrder.DESC}`,
       });
 
       // Định dạng tin nhắn thành đoạn hội thoại
-      const history = messages.content
-        .reverse() // Đảo ngược để tin nhắn cũ hơn đứng trước
-        .reduce((res, cur) => ({ ...res, [cur.sender]: cur.content }), {});
+      const history = messages.content.reduce(
+        (res, cur) => ({ ...res, [cur.sender]: cur.content }),
+        {},
+      );
 
       // Lưu tin nhắn của User vào DB
       const newUserMessage = this.messageRepository.create({

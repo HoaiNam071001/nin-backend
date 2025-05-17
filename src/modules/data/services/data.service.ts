@@ -1,7 +1,9 @@
+import * as ffmpegInstaller from '@ffmpeg-installer/ffmpeg';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { Response } from 'express';
-import { ConfigService } from '@nestjs/config';
+import ffmpeg from 'fluent-ffmpeg';
 import * as streamifier from 'streamifier';
 import { ENV_ATTR } from '../../../config/app.config';
 import {
@@ -11,8 +13,6 @@ import {
   SystemFileType,
 } from '../models';
 import { BaseService } from './base.service';
-import ffmpeg from 'fluent-ffmpeg';
-import * as ffmpegInstaller from '@ffmpeg-installer/ffmpeg';
 
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
@@ -34,7 +34,7 @@ export class DataService {
 
     try {
       await this.uploadFileToHdfs(file.buffer, hdfsPath);
-      const appUrl = this.configService.get<string>(ENV_ATTR.APP_URL);
+      const appUrl = this.configService.get<string>(ENV_ATTR.HADOOP_URL);
       const port = this.configService.get<string>(ENV_ATTR.PORT);
 
       return { url: `${appUrl}:${port}${FILE_ROUTE}${hdfsPath}` };
